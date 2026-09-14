@@ -15,7 +15,7 @@
     <button id="btMenu" aria-expanded="false" aria-controls="ribbon">Menu <span class="seta">▾</span></button>
   </header>
 
-  <div id="ribbon" hidden></div>
+  <nav id="ribbon"></nav>
 
   <div id="app">
     <aside id="sidebar">
@@ -41,13 +41,23 @@
     </main>
   </div>
 
-  <div id="modalCampos">
+  <div id="modalCampos" class="modal">
     <div class="caixa">
       <h3>Escolher campos para exportar</h3>
       <div id="camposLista"></div>
       <div class="botoes">
         <button class="bt" id="camposCancelar">Cancelar</button>
         <button class="bt p" id="camposExportar">Exportar .csv</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalInfo" class="modal">
+    <div class="caixa">
+      <h3 id="infoTitulo"></h3>
+      <div id="infoCorpo"></div>
+      <div class="botoes">
+        <button class="bt p" id="infoFechar">Fechar</button>
       </div>
     </div>
   </div>

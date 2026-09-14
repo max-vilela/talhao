@@ -40,7 +40,10 @@ for (const faz of ORDEM) {
 
   camadas[faz] = grupo;
 }
-if (boundsGeral) map.fitBounds(boundsGeral, { padding: [24, 24] });
+if (boundsGeral) setTimeout(() => {
+  map.invalidateSize();
+  map.fitBounds(boundsGeral, { padding: [24, 24] });
+}, 0);
 
 function seleciona(faz, cod) {
   const d = FAZENDAS[faz];
@@ -203,51 +206,74 @@ document.getElementById('camposExportar').onclick = () => {
   modalCampos.classList.remove('on');
 };
 
-// --- ribbon (menu encolhido, tipo Word) ---
+// --- menu (árvore em dropdown) ---
 const ribbon = document.getElementById('ribbon');
 ribbon.innerHTML = `
-  <div class="grupo">
-    <h3>Exportar</h3>
-    <div class="ac">
-      <button class="bt" id="expTodos">Todos os dados</button>
-      <button class="bt" id="expMax">Distância máxima</button>
-      <button class="bt" id="expCampos">Escolher campos…</button>
+  <details class="arvore-item" open>
+    <summary>Exportar <span class="seta">▶</span></summary>
+    <div class="itens">
+      <button class="item" id="expTodos">Todos os dados</button>
+      <button class="item" id="expMax">Distância máxima</button>
+      <button class="item" id="expCampos">Escolher campos…</button>
     </div>
-  </div>` + ORDEM.map(faz => {
-  const d = FAZENDAS[faz];
-  return `<div class="grupo">
-    <h3><span class="pt" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CORES[faz]}"></span> ${d.nome}</h3>
-    <div class="ac">
-      <a class="bt" href="${d.slug}.html">Consultar</a>
-      <a class="bt" href="${d.slug}_bancada.html">Bancada</a>
-      <a class="bt" href="${d.slug}_distancias.xlsx" download>Planilha</a>
-      <a class="bt" href="${d.slug}_rotas.kml" download>KML</a>
+  </details>
+  <details class="arvore-item">
+    <summary>Fazendas <span class="seta">▶</span></summary>
+    <div class="itens">
+      ${ORDEM.map(faz => {
+        const d = FAZENDAS[faz];
+        return `<details class="arvore-item">
+          <summary><span class="pt" style="background:${CORES[faz]}"></span> ${d.nome} <span class="seta">▶</span></summary>
+          <div class="itens">
+            <a class="item" href="${d.slug}.html">Consultar tabela</a>
+            <a class="item" href="${d.slug}_bancada.html">Bancada de estradas</a>
+            <a class="item" href="${d.slug}_distancias.xlsx" download>Planilha .xlsx</a>
+            <a class="item" href="${d.slug}_rotas.kml" download>KML das rotas</a>
+          </div>
+        </details>`;
+      }).join('')}
     </div>
-  </div>`;
-}).join('') + `
-  <div class="grupo pend">
-    <h3>Pendências</h3>
-    <p class="info">Promissão (40) e Tucano (70) sem ponto de sede no Google Earth — falta marcar e reexportar o KML.</p>
-  </div>
-  <div class="grupo sobre">
-    <h3>Como a medida é feita</h3>
-    <p class="info">Malha de estradas montada a partir das divisas dos talhões e completada com estradas conferidas em campo.
-    Sobre ela roda um cálculo de menor caminho a partir da sede.
-    <b>Máx</b>: pior caso, até o ponto mais extremo do talhão. <b>Mín</b>: até o acesso mais próximo.
-    <b>Reta</b>: só referência. <b>Fator</b> = máx ÷ reta — em talhão colado na sede o fator estoura sozinho, olhe a distância.
-    Não considera sentido de tráfego, peso, ponte, porteira ou chuva.</p>
-  </div>`;
+  </details>
+  <button class="item" id="btSobre">Como a medida é feita</button>
+  <button class="item" id="btPendencias">Pendências</button>`;
 
 document.getElementById('expTodos').onclick = () => exportaCSV(CAMPOS.map(c => c.k), 'talhoes_todos_os_dados.csv');
 document.getElementById('expMax').onclick = () => exportaCSV(['fazenda', 'talhao', 'situacao', 'max'], 'talhoes_distancia_maxima.csv');
 document.getElementById('expCampos').onclick = () => modalCampos.classList.add('on');
 
+const modalInfo = document.getElementById('modalInfo');
+function abreInfo(titulo, html) {
+  document.getElementById('infoTitulo').textContent = titulo;
+  document.getElementById('infoCorpo').innerHTML = html;
+  modalInfo.classList.add('on');
+}
+document.getElementById('btSobre').onclick = () => abreInfo('Como a medida é feita', `
+  <p>Malha de estradas montada a partir das divisas dos talhões e completada com estradas conferidas em campo.
+  Sobre ela roda um cálculo de menor caminho a partir da sede.</p>
+  <dl>
+    <dt>Máx</dt><dd>Pior caso, até o ponto mais extremo do talhão.</dd>
+    <dt>Mín</dt><dd>Até o acesso mais próximo.</dd>
+    <dt>Reta</dt><dd>Só referência.</dd>
+    <dt>Fator</dt><dd>Máx ÷ reta — em talhão colado na sede o fator estoura sozinho, olhe a distância.</dd>
+  </dl>
+  <p>Não considera sentido de tráfego, peso, ponte, porteira ou chuva.</p>`);
+document.getElementById('btPendencias').onclick = () => abreInfo('Pendências', `
+  <p><b>Promissão</b> (40 talhões) e <b>Tucano</b> (70 talhões) não têm ponto de sede no projeto do Google Earth —
+  sem origem marcada não há o que medir, por isso não aparecem no mapa. Falta marcar o ponto e reexportar o KML.</p>`);
+document.getElementById('infoFechar').onclick = () => modalInfo.classList.remove('on');
+modalInfo.onclick = e => { if (e.target === modalInfo) modalInfo.classList.remove('on'); };
+
 document.getElementById('btMenu').onclick = () => {
   const btn = document.getElementById('btMenu');
-  const aberto = ribbon.hidden;
-  ribbon.hidden = !aberto;
+  const aberto = ribbon.classList.toggle('on');
   btn.setAttribute('aria-expanded', String(aberto));
 };
+document.addEventListener('click', e => {
+  if (ribbon.classList.contains('on') && !ribbon.contains(e.target) && e.target.id !== 'btMenu' && !document.getElementById('btMenu').contains(e.target)) {
+    ribbon.classList.remove('on');
+    document.getElementById('btMenu').setAttribute('aria-expanded', 'false');
+  }
+});
 
 document.getElementById('btSidebar').onclick = () => {
   const sb = document.getElementById('sidebar');

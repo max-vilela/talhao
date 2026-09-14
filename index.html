@@ -10,12 +10,19 @@
 
   <header class="topo">
     <button id="btSidebar" aria-label="Mostrar lista de talhões">☰</button>
-    <h1>Distâncias dos talhões até a sede</h1>
-    <p>Medida pelas estradas e carreadores, não em linha reta. Atualizado em 14/09/2026.</p>
-    <button id="btMenu" aria-expanded="false" aria-controls="ribbon">Menu <span class="seta">▾</span></button>
+    <h1>Distâncias dos talhões</h1>
+    <nav class="navtop">
+      <div class="navitem">
+        <button class="navbt" id="btExportar" aria-expanded="false">Exportar <span class="seta">▾</span></button>
+        <div class="painel" id="painelExportar"></div>
+      </div>
+      <div class="navitem">
+        <button class="navbt" id="btFazendas" aria-expanded="false">Fazendas <span class="seta">▾</span></button>
+        <div class="painel" id="painelFazendas"></div>
+      </div>
+      <button class="navbt" id="btPendencias">Pendências</button>
+    </nav>
   </header>
-
-  <nav id="ribbon"></nav>
 
   <div id="app">
     <aside id="sidebar">
@@ -25,11 +32,12 @@
       <div id="resultados"></div>
       <div id="lista"></div>
       <div id="pendentes">
-        <b>Sem ponto de sede no projeto:</b> Promissão (40 talhões) e Tucano (70 talhões).
-        Sem origem marcada no Google Earth não há o que medir — por isso não aparecem no mapa.
+        <b>Java e Ponte de Pedra entregam a colheita na sede do Tucano</b> — mas ainda falta desenhar a
+        estrada que liga essas fazendas. Por enquanto a distância mostrada é até a própria sede.
       </div>
     </aside>
     <main id="mapwrap">
+      <div id="alertas"><div class="marquee-track" id="marqueeTrack"></div></div>
       <div id="mapa"></div>
       <div id="ficha">
         <button class="fechar" aria-label="Fechar">×</button>

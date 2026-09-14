@@ -15,7 +15,7 @@ projeto Python separado, fora deste repositório. Aqui entram os resultados pron
 |---|---|
 | `index.html`, `app.js`, `mapa.css`, `dados_mapa.js` | O mapa único (página inicial): todas as fazendas, busca, exportação, menu |
 | `FAZENDA_<nome>.html` | Consulta por fazenda: tabela ordenável, busca, mapa da rota de cada talhão |
-| `FAZENDA_<nome>_bancada.html` | Bancada — mapa interativo autocontido para desenhar/corrigir a malha de estradas |
+| `BANCADA_UNIFICADA.html` | Bancada única — mapa interativo para desenhar/corrigir a malha das sete fazendas |
 | `FAZENDA_<nome>_distancias.xlsx` | Planilha por fazenda (máx, mín, reta, fator, área) |
 | `FAZENDA_<nome>_rotas.kml` | Rotas + malha, para abrir no Google Earth |
 | `leaflet.js`, `leaflet.css` | Biblioteca de mapa, sem CDN |
@@ -30,6 +30,20 @@ projeto Python separado, fora deste repositório. Aqui entram os resultados pron
   **Fazendas** (link para a consulta/bancada/planilha/KML de cada uma) e **Pendências**.
 - **Alerta rolando** no topo do mapa: resume o que falta (estrada não mapeada, malha ainda não
   conferida em campo).
+
+## A bancada única
+
+As sete fazendas compartilham **uma só bancada** (`BANCADA_UNIFICADA.html`), em vez de uma por
+fazenda — Ponte de Pedra, Java e Tucano ficam perto o bastante para dividir estradas entre si
+(a entrega da colheita de Java e Ponte de Pedra é feita na sede do Tucano), e um único ponto de
+manutenção evita duplicar trabalho. Cada talhão usa uma chave interna com o prefixo da fazenda
+(ex.: `FAZENDA_JAVA/T-01`) para não colidir com talhões de mesmo código em outra fazenda — a
+tabela e os rótulos no mapa mostram só o código curto.
+
+Estradas desenhadas à mão que pertencem a uma fazenda só levam o nome dela, ex.:
+`ESTRADA 01 - PONTE DE PEDRA` — isso é o que já existe em `dados/estradas_extra.json` no
+pipeline. Estradas novas desenhadas na bancada única (a ligação entre fazendas, por exemplo)
+podem ficar sem esse sufixo até alguém decidir a qual fazenda atribuir.
 
 ## Estado das sete fazendas
 
@@ -62,15 +76,21 @@ para a sede do Tucano.
 Quando o KML do Google Earth muda (nova sede, malha corrigida na bancada, nova fazenda):
 
 1. Rodar o pipeline (projeto Python separado) para as fazendas afetadas — gera
-   `<slug>_rotas.json`, `_distancias.xlsx`, `_rotas.kml` e `_bancada.html`.
-2. Copiar esses arquivos para a raiz deste repositório.
-3. Nas páginas de consulta (`FAZENDA_<nome>.html`), trocar `vendor/leaflet.*` por `leaflet.*`
+   `<slug>_rotas.json`, `_distancias.xlsx` e `_rotas.kml`.
+2. Rodar `scripts/gera_bancada_unificada.py` no pipeline — remonta a bancada única com as
+   sete fazendas (lê os `_rotas.json` de novo, não precisa dos outros passos).
+3. Copiar os arquivos gerados para a raiz deste repositório (`_distancias.xlsx`, `_rotas.kml`,
+   `BANCADA_UNIFICADA.html`; as páginas de consulta `FAZENDA_<nome>.html` só precisam ser
+   regeradas — via `scripts/gera_site.py` no pipeline — se a malha ou a lista de talhões mudou).
+4. Nas páginas de consulta (`FAZENDA_<nome>.html`), trocar `vendor/leaflet.*` por `leaflet.*`
    e `'arquivos/' + D.slug` por `D.slug` — o pipeline gera pensando numa estrutura com
    subpastas `vendor/`/`arquivos/` que este repositório não usa (tudo fica na raiz).
-4. Reconstruir `dados_mapa.js` a partir dos `_rotas.json` de cada fazenda (mesmo formato:
+5. Reconstruir `dados_mapa.js` a partir dos `_rotas.json` de cada fazenda (mesmo formato:
    `slug`, `sede`, `talhoes`, `rotas`, `nome`, `situacao`, `situacao_label`).
-5. Se entrar fazenda nova, acrescentar a chave em `ORDEM` e uma cor em `CORES` no `app.js`.
-6. Commit e push — o GitHub Pages publica sozinho.
+6. Se entrar fazenda nova, acrescentar a chave em `ORDEM` e uma cor em `CORES` no `app.js` —
+   e, se ela compartilhar estrada com alguma das três, também em `FAZENDAS` dentro de
+   `scripts/gera_bancada_unificada.py`.
+7. Commit e push — o GitHub Pages publica sozinho.
 
 ## Publicação
 

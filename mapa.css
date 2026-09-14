@@ -40,6 +40,18 @@ header.topo p{margin:0;color:var(--mut);font-size:12px;display:none}
 .bt{display:inline-block;text-decoration:none;font-size:12.5px;padding:5px 10px;border-radius:7px;
   border:1px solid var(--linha);color:var(--tx);background:#fff;cursor:pointer;font:inherit}
 .bt:hover{border-color:var(--acc);color:var(--acc)}
+.bt.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:500}
+.bt.p:hover{background:#27562f;color:#fff}
+
+#modalCampos{display:none;position:fixed;inset:0;z-index:2000;background:#1c1d1966;
+  align-items:center;justify-content:center;padding:16px}
+#modalCampos.on{display:flex}
+#modalCampos .caixa{background:var(--card);border-radius:12px;box-shadow:var(--sombra);
+  padding:18px 20px;width:340px;max-width:100%}
+#modalCampos h3{margin:0 0 12px;font-size:15px}
+#camposLista{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:50vh;overflow-y:auto}
+#camposLista label{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
+.botoes{display:flex;justify-content:flex-end;gap:8px}
 .grupo.sobre{max-width:340px}
 .grupo.pend{max-width:220px}
 
@@ -81,6 +93,9 @@ header.topo p{margin:0;color:var(--mut);font-size:12px;display:none}
 
 #mapwrap{flex:1 1 auto;position:relative;min-width:0}
 #mapa{position:absolute;inset:0}
+.rotulo-talhao{background:none;border:0;box-shadow:none;padding:0;pointer-events:none;
+  color:#fff;font-size:11px;font-weight:600;text-shadow:0 1px 2px #000,0 0 4px #000}
+.rotulo-talhao::before{display:none}
 
 #ficha{display:none;position:absolute;right:14px;top:14px;z-index:1000;background:var(--card);
   border:1px solid var(--linha);border-radius:12px;box-shadow:var(--sombra);padding:14px 16px;

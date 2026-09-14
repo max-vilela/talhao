@@ -23,7 +23,8 @@ for (const faz of ORDEM) {
   for (const [cod, anel] of Object.entries(d.talhoes)) {
     const poly = L.polygon(anel, { color: cor, weight: 1, fillOpacity: .12, fillColor: cor })
       .addTo(map)
-      .on('click', () => seleciona(faz, cod));
+      .on('click', () => seleciona(faz, cod))
+      .bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
     grupo.talhoes[cod] = poly;
     const b = poly.getBounds();
     boundsGeral = boundsGeral ? boundsGeral.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
@@ -152,9 +153,67 @@ busca.oninput = () => {
   });
 };
 
+// --- exportar ---
+const CAMPOS = [
+  { k: 'fazenda', label: 'Fazenda', get: r => r.fazenda },
+  { k: 'talhao', label: 'Talhão', get: r => r.talhao },
+  { k: 'situacao', label: 'Situação', get: r => r.situacao },
+  { k: 'max', label: 'Distância máxima (km)', get: r => fmt(r.max) },
+  { k: 'min', label: 'Distância mínima (km)', get: r => fmt(r.min) },
+  { k: 'reta', label: 'Distância reta (km)', get: r => fmt(r.reta) },
+  { k: 'fator', label: 'Fator', get: r => r.f == null ? '' : r.f.toFixed(2).replace('.', ',') },
+  { k: 'area', label: 'Área (ha)', get: r => r.ha.toFixed(0) },
+  { k: 'obs', label: 'Observação', get: r => r.obs || '' },
+];
+
+function linhasExport() {
+  const out = [];
+  for (const faz of ORDEM) {
+    const d = FAZENDAS[faz];
+    for (const r of d.rotas) out.push({ fazenda: d.nome, situacao: d.situacao_label, talhao: r.t, ...r });
+  }
+  return out;
+}
+
+function exportaCSV(chaves, nomeArquivo) {
+  const cols = CAMPOS.filter(c => chaves.includes(c.k));
+  const linhas = linhasExport();
+  const linhaCSV = valores => valores.map(v => {
+    const s = String(v ?? '');
+    return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(';');
+  const bom = '﻿';
+  const csv = bom + linhaCSV(cols.map(c => c.label)) + '\n'
+    + linhas.map(r => linhaCSV(cols.map(c => c.get(r)))).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nomeArquivo; a.click();
+  URL.revokeObjectURL(url);
+}
+
+const modalCampos = document.getElementById('modalCampos');
+document.getElementById('camposLista').innerHTML = CAMPOS.map(c =>
+  `<label><input type="checkbox" value="${c.k}" checked> ${c.label}</label>`).join('');
+document.getElementById('camposCancelar').onclick = () => modalCampos.classList.remove('on');
+modalCampos.onclick = e => { if (e.target === modalCampos) modalCampos.classList.remove('on'); };
+document.getElementById('camposExportar').onclick = () => {
+  const chaves = Array.from(document.querySelectorAll('#camposLista input:checked')).map(i => i.value);
+  if (chaves.length) exportaCSV(chaves, 'talhoes_personalizado.csv');
+  modalCampos.classList.remove('on');
+};
+
 // --- ribbon (menu encolhido, tipo Word) ---
 const ribbon = document.getElementById('ribbon');
-ribbon.innerHTML = ORDEM.map(faz => {
+ribbon.innerHTML = `
+  <div class="grupo">
+    <h3>Exportar</h3>
+    <div class="ac">
+      <button class="bt" id="expTodos">Todos os dados</button>
+      <button class="bt" id="expMax">Distância máxima</button>
+      <button class="bt" id="expCampos">Escolher campos…</button>
+    </div>
+  </div>` + ORDEM.map(faz => {
   const d = FAZENDAS[faz];
   return `<div class="grupo">
     <h3><span class="pt" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CORES[faz]}"></span> ${d.nome}</h3>
@@ -178,6 +237,10 @@ ribbon.innerHTML = ORDEM.map(faz => {
     <b>Reta</b>: só referência. <b>Fator</b> = máx ÷ reta — em talhão colado na sede o fator estoura sozinho, olhe a distância.
     Não considera sentido de tráfego, peso, ponte, porteira ou chuva.</p>
   </div>`;
+
+document.getElementById('expTodos').onclick = () => exportaCSV(CAMPOS.map(c => c.k), 'talhoes_todos_os_dados.csv');
+document.getElementById('expMax').onclick = () => exportaCSV(['fazenda', 'talhao', 'situacao', 'max'], 'talhoes_distancia_maxima.csv');
+document.getElementById('expCampos').onclick = () => modalCampos.classList.add('on');
 
 document.getElementById('btMenu').onclick = () => {
   const btn = document.getElementById('btMenu');

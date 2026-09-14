@@ -3,8 +3,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FAZENDA MATO GROSSO — distâncias até a sede</title>
 <link rel="stylesheet" href="estilo.css">
-<link rel="stylesheet" href="vendor/leaflet.css">
-<script src="vendor/leaflet.js"></script>
+<link rel="stylesheet" href="leaflet.css">
+<script src="leaflet.js"></script>
 </head><body><div class="w">
 <nav class="volta"><a href="index.html">&larr; todas as fazendas</a></nav>
 <header class="topo">
@@ -44,8 +44,8 @@ const D = {"slug":"FAZENDA_MATO_GROSSO","sede":[-13.825901,-59.164748],"talhoes"
 const fmt = m => m == null ? '—' : (m/1000).toFixed(2).replace('.', ',');
 const corpo = document.getElementById('corpo'), cont = document.getElementById('cont');
 let sk = 'max', sd = -1, sel = null, mapa = null, cam = null;
-document.getElementById('dlx').href = 'arquivos/' + D.slug + '_distancias.xlsx';
-document.getElementById('dlk').href = 'arquivos/' + D.slug + '_rotas.kml';
+document.getElementById('dlx').href = D.slug + '_distancias.xlsx';
+document.getElementById('dlk').href = D.slug + '_rotas.kml';
 function filtra(){
   const q = document.getElementById('q').value.trim().toLowerCase();
   return D.rotas.filter(r => !q || r.t.toLowerCase().includes(q));

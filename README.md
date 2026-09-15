@@ -50,17 +50,23 @@ podem ficar sem esse sufixo até alguém decidir a qual fazenda atribuir.
 | Fazenda | Talhões | Situação |
 |---|---|---|
 | Ponte de Pedra | 51 | **Conferida em campo** — malha toda desenhada e validada. |
-| Mato Grosso | 28 | Calculada só com as divisas; ninguém da fazenda conferiu ainda. |
-| Panamá | 24 | Calculada só com as divisas; ninguém da fazenda conferiu ainda. |
-| Java | 35 | Parcial — 14 talhões sem estrada mapeada até a sede. |
-| Galheiro | 103 | Parcial — 67 talhões sem estrada mapeada até a sede. |
-| Promissão | 40 | Parcial — 14 talhões sem estrada mapeada até a sede. |
-| Tucano | 70 | Parcial — 52 talhões sem estrada mapeada até a sede. |
+| Mato Grosso | 28 | Calculada, malha completa; ninguém da fazenda conferiu ainda. |
+| Panamá | 24 | Calculada, malha completa; ninguém da fazenda conferiu ainda. |
+| Java | 35 | Calculada, malha completa; ninguém da fazenda conferiu ainda. |
+| Galheiro | 103 | Calculada, malha completa (1 ligação em linha reta a confirmar); ninguém conferiu ainda. |
+| Promissão | 40 | Calculada, malha completa; ninguém da fazenda conferiu ainda. |
+| Tucano | 70 | Calculada, malha completa; ninguém da fazenda conferiu ainda. |
 
-**Pendência em aberto:** Java e Ponte de Pedra entregam a colheita na sede do Tucano, mas a
-estrada que liga essas fazendas ainda não foi desenhada. Por enquanto o site mostra, para as
-duas, a distância até a própria sede — quando a estrada existir, o cálculo passa a apontar
-para a sede do Tucano.
+Todos os 351 talhões das sete fazendas têm estrada mapeada até a sede — a malha desenhada na
+bancada única fechou o que faltava. Falta só alguém da fazenda conferir cada uma em campo (só
+Ponte de Pedra tem esse selo hoje).
+
+**Java e Ponte de Pedra entregam a colheita na sede do Tucano.** A distância de cada talhão
+dessas duas fazendas é medida até a sede do Tucano, não até a própria — a malha usada no cálculo
+soma os talhões das três fazendas (via `pipeline.py --sede-de "FAZENDA TUCANO"`), aproveitando a
+estrada de ligação desenhada na bancada única. O marcador de sede que aparece no mapa e na bancada
+para navegação continua na localização real de cada fazenda; só o cálculo de distância usa a
+sede do Tucano.
 
 ## Como ler os números
 
@@ -76,7 +82,8 @@ para a sede do Tucano.
 Quando o KML do Google Earth muda (nova sede, malha corrigida na bancada, nova fazenda):
 
 1. Rodar o pipeline (projeto Python separado) para as fazendas afetadas — gera
-   `<slug>_rotas.json`, `_distancias.xlsx` e `_rotas.kml`.
+   `<slug>_rotas.json`, `_distancias.xlsx` e `_rotas.kml`. Java e Ponte de Pedra levam
+   `--sede-de "FAZENDA TUCANO"` (a malha soma as três, mas só reporta a fazenda pedida).
 2. Rodar `scripts/gera_bancada_unificada.py` no pipeline — remonta a bancada única com as
    sete fazendas (lê os `_rotas.json` de novo, não precisa dos outros passos).
 3. Copiar os arquivos gerados para a raiz deste repositório (`_distancias.xlsx`, `_rotas.kml`,

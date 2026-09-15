@@ -246,11 +246,19 @@ document.getElementById('btSobre').onclick = () => abreInfo('Como a medida é fe
   </dl>
   <p>Não considera sentido de tráfego, peso, ponte, porteira ou chuva.</p>`);
 function semAcesso(faz) { return FAZENDAS[faz].rotas.filter(r => r.max == null).length; }
-document.getElementById('btPendencias').onclick = () => abreInfo('Pendências', `
-  <p><b>Java</b> e <b>Ponte de Pedra</b> entregam a colheita na sede do <b>Tucano</b>, mas a estrada que liga
-  essas fazendas ainda não foi desenhada — por enquanto a distância mostrada é até a própria sede de cada uma.</p>
-  <p>Fazendas com talhões ainda sem estrada mapeada até a sede: ${ORDEM.filter(f => semAcesso(f) > 0)
-    .map(f => `<b>${FAZENDAS[f].nome}</b> (${semAcesso(f)})`).join(', ')}.</p>`);
+document.getElementById('btPendencias').onclick = () => {
+  const semEstrada = ORDEM.filter(f => semAcesso(f) > 0);
+  const naoConferida = ORDEM.filter(f => FAZENDAS[f].situacao !== 'ok');
+  abreInfo('Pendências', `
+  <p><b>Java</b> e <b>Ponte de Pedra</b> entregam a colheita na sede do <b>Tucano</b> — a distância
+  de cada talhão dessas duas fazendas já é medida até lá, não até a própria sede.</p>
+  <p>${semEstrada.length
+      ? 'Fazendas com talhões ainda sem estrada mapeada até a sede: '
+        + semEstrada.map(f => `<b>${FAZENDAS[f].nome}</b> (${semAcesso(f)})`).join(', ') + '.'
+      : 'Todos os talhões das sete fazendas já têm estrada mapeada até a sede.'}</p>
+  <p>Ainda sem conferência em campo (malha desenhada, mas ninguém da fazenda validou):
+  ${naoConferida.map(f => `<b>${FAZENDAS[f].nome}</b>`).join(', ')}.</p>`);
+};
 document.getElementById('infoFechar').onclick = () => modalInfo.classList.remove('on');
 modalInfo.onclick = e => { if (e.target === modalInfo) modalInfo.classList.remove('on'); };
 
@@ -276,8 +284,8 @@ document.addEventListener('click', e => {
 
 // --- bloco de alertas (texto rolando no topo do mapa) ---
 const avisos = [];
-avisos.push('<b>Java</b> e <b>Ponte de Pedra</b>: entrega da colheita é feita na sede do Tucano, ' +
-  'mas a estrada de ligação entre as fazendas ainda não foi desenhada.');
+avisos.push('<b>Java</b> e <b>Ponte de Pedra</b>: entrega da colheita é feita na sede do Tucano — a ' +
+  'distância de cada talhão dessas duas fazendas é medida até lá.');
 const naoConferidas = ORDEM.filter(f => FAZENDAS[f].situacao_label === 'Calculada, não conferida');
 if (naoConferidas.length) {
   avisos.push(`${naoConferidas.map(f => `<b>${FAZENDAS[f].nome}</b>`).join(' e ')}: calculado a partir ` +

@@ -39,6 +39,12 @@ header.topo h1{font-size:14.5px;margin:0;letter-spacing:-.01em;white-space:nowra
 .painel.on{display:block}
 .painel>.item{font-weight:600;font-size:13.5px}
 
+.camada-ck{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13px;cursor:pointer;border-radius:7px}
+.camada-ck:hover{background:var(--acc-fraco)}
+.camada-ck input[type=color]{margin-left:auto;width:24px;height:20px;padding:0;border:1px solid var(--linha);
+  border-radius:4px;background:none;cursor:pointer}
+.camada-ck .hint{color:var(--mut);font-size:11px;padding:0 8px 8px 30px;margin:-4px 0 4px}
+
 .arvore-item{border-bottom:1px solid #f0f0ec}
 .arvore-item:last-child{border-bottom:0}
 .arvore-item summary{list-style:none;cursor:pointer;padding:9px 8px;display:flex;align-items:center;

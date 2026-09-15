@@ -225,6 +225,65 @@ document.getElementById('painelFazendas').innerHTML = ORDEM.map(faz => {
   </details>`;
 }).join('') + `<button class="item" id="btSobre">Como a medida é feita</button>`;
 
+let corMalhaMapaInicial = '#ffffff';
+try { corMalhaMapaInicial = localStorage.getItem('malha_cor') || corMalhaMapaInicial; } catch (e) {}
+document.getElementById('painelCamadas').innerHTML = `
+  <label class="camada-ck"><input type="checkbox" id="ckContorno" checked> Contorno dos talhões</label>
+  <label class="camada-ck"><input type="checkbox" id="ckRotulos" checked> Rótulos dos talhões</label>
+  <label class="camada-ck"><input type="checkbox" id="ckMalha"> Malha de estradas (divisas)
+    <input type="color" id="corMalhaMapa" value="${corMalhaMapaInicial}" title="Cor da malha"></label>
+  <label class="camada-ck"><input type="checkbox" id="ckTracadas"> Estradas desenhadas na bancada</label>
+  <p class="hint" style="padding:0 8px 8px;margin:-2px 0 0">Malha e estradas desenhadas carregam sob demanda, na primeira vez que a caixa é marcada.</p>`;
+
+document.getElementById('ckContorno').onchange = e => {
+  const visivel = e.target.checked;
+  for (const faz of ORDEM) for (const poly of Object.values(camadas[faz].talhoes))
+    poly.setStyle(visivel ? { opacity: 1, fillOpacity: .12 } : { opacity: 0, fillOpacity: 0 });
+};
+document.getElementById('ckRotulos').onchange = e => {
+  const visivel = e.target.checked;
+  for (const faz of ORDEM) for (const [cod, poly] of Object.entries(camadas[faz].talhoes)) {
+    if (visivel) poly.bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
+    else poly.unbindTooltip();
+  }
+};
+
+let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
+function carregaCamadasExtras(cb) {
+  if (camadasExtrasCarregadas) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'malha_estradas.js';
+  s.onload = () => { camadasExtrasCarregadas = true; cb(); };
+  document.head.appendChild(s);
+}
+document.getElementById('ckMalha').onchange = e => {
+  if (!e.target.checked) { if (malhaCamada) map.removeLayer(malhaCamada); return; }
+  carregaCamadasExtras(() => {
+    if (!malhaCamada) {
+      malhaCamada = L.layerGroup();
+      const cor = document.getElementById('corMalhaMapa').value;
+      for (const faz of ORDEM) (MALHA[faz] || []).forEach(l =>
+        L.polyline(l, { color: cor, weight: 1.5, opacity: .8 }).addTo(malhaCamada));
+    }
+    malhaCamada.addTo(map);
+  });
+};
+document.getElementById('corMalhaMapa').oninput = e => {
+  if (malhaCamada) malhaCamada.eachLayer(l => l.setStyle({ color: e.target.value }));
+  try { localStorage.setItem('malha_cor', e.target.value); } catch (err) {}
+};
+document.getElementById('ckTracadas').onchange = e => {
+  if (!e.target.checked) { if (tracadasCamada) map.removeLayer(tracadasCamada); return; }
+  carregaCamadasExtras(() => {
+    if (!tracadasCamada) {
+      tracadasCamada = L.layerGroup();
+      TRACADAS.forEach(t => L.polyline(t.pts, { color: '#ff8a00', weight: 3, opacity: .9 })
+        .bindTooltip(t.nome, { sticky: true }).addTo(tracadasCamada));
+    }
+    tracadasCamada.addTo(map);
+  });
+};
+
 document.getElementById('expTodos').onclick = () => exportaCSV(CAMPOS.map(c => c.k), 'talhoes_todos_os_dados.csv');
 document.getElementById('expMax').onclick = () => exportaCSV(['fazenda', 'talhao', 'situacao', 'max'], 'talhoes_distancia_maxima.csv');
 document.getElementById('expCampos').onclick = () => modalCampos.classList.add('on');
@@ -266,6 +325,7 @@ modalInfo.onclick = e => { if (e.target === modalInfo) modalInfo.classList.remov
 const dropdowns = [
   { btn: document.getElementById('btExportar'), painel: document.getElementById('painelExportar') },
   { btn: document.getElementById('btFazendas'), painel: document.getElementById('painelFazendas') },
+  { btn: document.getElementById('btCamadas'), painel: document.getElementById('painelCamadas') },
 ];
 function fechaDropdowns() {
   dropdowns.forEach(d => { d.painel.classList.remove('on'); d.btn.setAttribute('aria-expanded', 'false'); });
@@ -288,8 +348,8 @@ avisos.push('<b>Java</b> e <b>Ponte de Pedra</b>: entrega da colheita é feita n
   'distância de cada talhão dessas duas fazendas é medida até lá.');
 const naoConferidas = ORDEM.filter(f => FAZENDAS[f].situacao_label === 'Calculada, não conferida');
 if (naoConferidas.length) {
-  avisos.push(`${naoConferidas.map(f => `<b>${FAZENDAS[f].nome}</b>`).join(' e ')}: calculado a partir ` +
-    'das divisas, ainda não conferido em campo.');
+  avisos.push(`${naoConferidas.map(f => `<b>${FAZENDAS[f].nome}</b>`).join(' e ')}: calculado, ` +
+    'ainda não conferido em campo.');
 }
 for (const faz of ORDEM) {
   const n = semAcesso(faz);

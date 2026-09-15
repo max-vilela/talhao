@@ -721,9 +721,11 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
     <div class="row">
       <button id="bnew" class="go">Desenhar estradas</button>
       <button id="bblock">Marcar divisa sem estrada</button>
+      <button id="bedit">Apagar estrada existente</button>
     </div>
     <p class="hint" id="chint">No modo desenho: cada clique põe um ponto. Dois cliques (ou "Terminar estrada") fecham a estrada e já começam a próxima. Os pontos grudam nas estradas existentes quando você clica perto.</p>
     <ul class="lst" id="lst"></ul>
+    <ul class="lst" id="lstRem"></ul>
     <div class="row" style="margin-top:9px">
       <button id="bcopy" class="on">Copiar correções</button>
       <button id="bdl">Baixar .json</button>
@@ -744,7 +746,8 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
     <p class="hint" id="tdiag">carregando…</p>
   </div>
   <div class="sec"><h2>Camadas</h2>
-    <label class="ck"><span class="sw" style="border-color:#ffe600"></span><input type="checkbox" id="cM" checked> Malha usada no cálculo (divisas)</label>
+    <label class="ck"><span class="sw" id="swM" style="border-color:#ffffff"></span><input type="checkbox" id="cM" checked> Malha usada no cálculo (divisas)
+      <input type="color" id="corMalha" value="#ffffff" title="Cor da malha" style="margin-left:auto;width:26px;height:20px;padding:0;border:1px solid var(--line);background:none;cursor:pointer"></label>
     <label class="ck"><span class="sw" style="border-color:#ff8a00"></span><input type="checkbox" id="cE" checked> Estradas que eu tracei na imagem</label>
     <label class="ck"><span class="sw" style="border-color:#38d39f"></span><input type="checkbox" id="cU" checked> Estradas que você desenhou</label>
     <label class="ck"><span class="sw" style="border-color:#ff3b3b"></span><input type="checkbox" id="cX" checked> Traçado ERRADO (a substituir)</label>
@@ -817,15 +820,29 @@ D.talhoes.forEach(f=>{f.c.forEach(p=>{if(okLL(p))bnds.push(p);});
   const po=L.polygon(f.c,{color:cor,weight:1,fill:true,fillColor:cor,fillOpacity:.06}).addTo(gT);
   po.on('click',e=>{if(mode)return;L.DomEvent.stop(e);select(f.n);});
   L.marker(po.getBounds().getCenter(),{icon:L.divIcon({className:'',html:'<div class="lbl">'+(f.label||f.n)+'</div>'})}).addTo(gL);});
-D.malha.forEach((l,i)=>{const pl=L.polyline(l,{color:'#ffe600',weight:2.2,opacity:.8}).addTo(gM);
+let corMalha='#ffffff';
+try{const s=localStorage.getItem('malha_cor');if(s)corMalha=s;}catch(e){}
+const malhaLayers=[];
+D.malha.forEach((l,i)=>{const pl=L.polyline(l,{color:corMalha,weight:2.2,opacity:.8}).addTo(gM);
+  malhaLayers.push(pl);
   pl.on('click',e=>{if(mode==='block'){L.DomEvent.stop(e);block(i,pl);}});addSnap(l);});
+const inCorMalha=document.getElementById('corMalha');
+inCorMalha.value=corMalha;
+document.getElementById('swM').style.borderColor=corMalha;
+inCorMalha.oninput=()=>{corMalha=inCorMalha.value;
+  document.getElementById('swM').style.borderColor=corMalha;
+  malhaLayers.forEach(pl=>pl.setStyle({color:corMalha}));
+  try{localStorage.setItem('malha_cor',corMalha);}catch(e){}};
 (D.erradas||[]).forEach(t=>{L.polyline(t.pts,{color:'#ff3b3b',weight:4,dashArray:'9,7',opacity:1}).addTo(gX)
   .bindTooltip(t.nome,{sticky:true});
   const b=document.createElement('button');b.className='sm';b.textContent='\u2192 corrigir este trecho';
   b.onclick=()=>map.fitBounds(L.polyline(t.pts).getBounds(),{padding:[80,80]});
   document.getElementById('gotos').appendChild(b);});
-D.tracadas.forEach((t,i)=>{L.polyline(t.pts,{color:'#ff8a00',weight:4,opacity:1}).addTo(gE)
+const tracadaLayers=[];
+D.tracadas.forEach((t,i)=>{const pl=L.polyline(t.pts,{color:'#ff8a00',weight:4,opacity:1}).addTo(gE)
   .bindTooltip(t.nome,{sticky:true});addSnap(t.pts);
+  tracadaLayers.push({nome:t.nome,pl});
+  pl.on('click',e=>{if(mode==='editar'){L.DomEvent.stop(e);toggleRemover(t.nome,pl);}});
   const b=document.createElement('button');b.className='sm';b.textContent='→ '+t.nome.split(' (')[0];
   b.onclick=()=>map.fitBounds(L.polyline(t.pts).getBounds(),{padding:[60,60]});
   document.getElementById('gotos').appendChild(b);});
@@ -871,8 +888,8 @@ draw();
 const LY={cT:gT,cL:gL,cM:gM,cE:gE,cU:gU,cR:gR,cX:gX};
 Object.keys(LY).forEach(id=>document.getElementById(id).onchange=e=>e.target.checked?map.addLayer(LY[id]):map.removeLayer(LY[id]));
 // ---------- correcoes
-let COR={estradas:[],divisas_sem_estrada:[]};
-try{const s=localStorage.getItem('cor_unificada');if(s){COR=JSON.parse(s);}}catch(e){}
+let COR={estradas:[],divisas_sem_estrada:[],remover:[]};
+try{const s=localStorage.getItem('cor_unificada');if(s){COR=JSON.parse(s);COR.remover=COR.remover||[];}}catch(e){}
 let mode=null,pts=[],nDraw=0;
 const bar=document.getElementById('bar');
 function save(){try{localStorage.setItem('cor_unificada',JSON.stringify(COR));}catch(e){}}
@@ -888,16 +905,37 @@ function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   x.onclick=()=>{COR.estradas.splice(i,1);save();renderU();stat();};
   const w=document.createElement('span');w.append(z,' ',x);li.appendChild(w);ul.appendChild(li);});
  stat();}
-function stat(){document.getElementById('cstat').textContent=(COR.estradas.length||COR.divisas_sem_estrada.length)
-  ? COR.estradas.length+' estrada(s) sua(s), '+COR.divisas_sem_estrada.length+' divisa(s) marcada(s) sem estrada. Salvo no navegador.'
+function stat(){document.getElementById('cstat').textContent=(COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length)
+  ? COR.estradas.length+' estrada(s) sua(s), '+COR.divisas_sem_estrada.length+' divisa(s) marcada(s) sem estrada, '
+    +COR.remover.length+' estrada(s) existente(s) marcada(s) pra apagar. Salvo no navegador.'
   : 'Nenhuma correção ainda.';}
+function toggleRemover(nome,pl){
+ const i=COR.remover.indexOf(nome);
+ if(i===-1){COR.remover.push(nome);pl.setStyle({color:'#ff3b3b',dashArray:'4,6',opacity:.6});}
+ else{COR.remover.splice(i,1);pl.setStyle({color:'#ff8a00',dashArray:null,opacity:1});}
+ save();renderRem();}
+function renderRem(){
+ tracadaLayers.forEach(({nome,pl})=>{
+  const marcada=COR.remover.includes(nome);
+  pl.setStyle(marcada?{color:'#ff3b3b',dashArray:'4,6',opacity:.6}:{color:'#ff8a00',dashArray:null,opacity:1});});
+ const ul=document.getElementById('lstRem');ul.innerHTML='';
+ COR.remover.forEach(nome=>{
+  const li=document.createElement('li');
+  li.innerHTML='<span>✕ '+nome+'</span>';
+  const d=document.createElement('button');d.className='sm';d.textContent='desfazer';
+  d.onclick=()=>{const t=tracadaLayers.find(x=>x.nome===nome);toggleRemover(nome,t.pl);};
+  li.appendChild(d);ul.appendChild(li);});
+ stat();}
 function setMode(m){mode=m;
  document.getElementById('bnew').classList.toggle('on',m==='draw');
  document.getElementById('bblock').classList.toggle('on',m==='block');
+ document.getElementById('bedit').classList.toggle('on',m==='editar');
  bar.classList.toggle('show',m==='draw');
  map.getContainer().style.cursor=m?'crosshair':'';
  document.getElementById('chint').textContent = m==='block'
   ? 'Clique em cima de um trecho amarelo que NÃO é estrada de verdade.'
+  : m==='editar'
+  ? 'Clique numa estrada laranja (já desenhada) para marcar pra apagar. Clique de novo pra desfazer.'
   : 'No modo desenho: cada clique põe um ponto. Dois cliques (ou "Terminar estrada") fecham a estrada e já começam a próxima. Os pontos grudam nas estradas existentes quando você clica perto.';}
 function snap(ll){const p=map.latLngToContainerPoint(ll);let best=null,bd=18;
  for(const s of SNAP){const q=map.latLngToContainerPoint(s);const d=Math.hypot(p.x-q.x,p.y-q.y);
@@ -907,6 +945,7 @@ function snap(ll){const p=map.latLngToContainerPoint(ll);let best=null,bd=18;
  return best?[best[0],best[1]]:[+ll.lat.toFixed(6),+ll.lng.toFixed(6)];}
 document.getElementById('bnew').onclick=()=>{if(mode==='draw'){exitDraw();return;}pts=[];nDraw=COR.estradas.length;setMode('draw');tmp();};
 document.getElementById('bblock').onclick=()=>setMode(mode==='block'?null:'block');
+document.getElementById('bedit').onclick=()=>setMode(mode==='editar'?null:'editar');
 map.on('click',e=>{if(mode!=='draw')return;pts.push(snap(e.latlng));tmp();});
 map.on('dblclick',e=>{if(mode==='draw'){L.DomEvent.stop(e);endRoad();}});
 function tmp(){gD.clearLayers();if(pts.length>1)L.polyline(pts,{color:'#38d39f',weight:4,dashArray:'8,5'}).addTo(gD);
@@ -930,7 +969,7 @@ document.getElementById('bcopy').onclick=async()=>{const t=JSON.stringify(COR);
 document.getElementById('bdl').onclick=()=>{const b=new Blob([JSON.stringify(COR,null,1)],{type:'application/json'});
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='correcoes_estradas_unificada.json';a.click();};
 document.getElementById('bclr').onclick=()=>{if(!confirm('Apagar todas as suas correções?'))return;
- COR={estradas:[],divisas_sem_estrada:[]};save();location.reload();};
+ COR={estradas:[],divisas_sem_estrada:[],remover:[]};save();location.reload();};
 document.querySelectorAll('#bases button').forEach(b=>b.onclick=()=>setBase(b.dataset.b));
-renderU();
+renderU();renderRem();
 </script></body></html>

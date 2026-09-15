@@ -23,7 +23,7 @@ for (const faz of ORDEM) {
   for (const [cod, anel] of Object.entries(d.talhoes)) {
     const poly = L.polygon(anel, { color: cor, weight: 1, fillOpacity: .12, fillColor: cor })
       .addTo(map)
-      .on('click', () => seleciona(faz, cod))
+      .on('click', e => { L.DomEvent.stopPropagation(e); seleciona(faz, cod); })
       .bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
     grupo.talhoes[cod] = poly;
     const b = poly.getBounds();
@@ -56,7 +56,7 @@ function desseleciona() {
   camadaSelecao.clearLayers();
 }
 
-function seleciona(faz, cod) {
+function seleciona(faz, cod, { zoom = false } = {}) {
   if (selecionado && selecionado.faz === faz && selecionado.cod === cod) {
     desseleciona();
     return;
@@ -77,7 +77,7 @@ function seleciona(faz, cod) {
   const poly = camadas[faz].talhoes[cod];
   if (poly) {
     poly.setStyle({ weight: 3, fillOpacity: .3 });
-    map.fitBounds(poly.getBounds(), { padding: [80, 80], maxZoom: 16 });
+    if (zoom) map.fitBounds(poly.getBounds(), { padding: [80, 80], maxZoom: 16 });
   }
   if (r.p && r.p.length) {
     L.polyline(r.p, { color: '#000', weight: 7, opacity: .3 }).addTo(camadaSelecao);
@@ -121,7 +121,7 @@ lista.innerHTML = ORDEM.map(faz => {
   </details>`;
 }).join('');
 
-lista.querySelectorAll('.talhoes button').forEach(b => b.onclick = () => seleciona(b.dataset.faz, b.dataset.cod));
+lista.querySelectorAll('.talhoes button').forEach(b => b.onclick = () => seleciona(b.dataset.faz, b.dataset.cod, { zoom: true }));
 lista.querySelectorAll('summary').forEach(s => s.addEventListener('click', () => {
   const faz = s.closest('details').dataset.faz;
   setTimeout(() => { if (s.closest('details').open) voaPara(faz); }, 0);
@@ -159,7 +159,7 @@ busca.oninput = () => {
     <b>${a.cod}</b><span>${FAZENDAS[a.faz].nome}</span></button>`).join('')
     || '<p style="padding:10px 2px;color:var(--mut);font-size:12.5px">Nada encontrado.</p>';
   resultados.querySelectorAll('.res').forEach(b => b.onclick = () => {
-    seleciona(b.dataset.faz, b.dataset.cod);
+    seleciona(b.dataset.faz, b.dataset.cod, { zoom: true });
     busca.value = ''; resultados.innerHTML = '';
   });
 };
@@ -260,7 +260,7 @@ let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
 function carregaCamadasExtras(cb) {
   if (camadasExtrasCarregadas) { cb(); return; }
   const s = document.createElement('script');
-  s.src = 'malha_estradas.js?v=20260915c';
+  s.src = 'malha_estradas.js?v=20260915d';
   s.onload = () => { camadasExtrasCarregadas = true; cb(); };
   document.head.appendChild(s);
 }

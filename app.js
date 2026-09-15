@@ -7,7 +7,7 @@ const fmt = m => m == null ? '—' : (m / 1000).toFixed(2).replace('.', ',');
 
 const map = L.map('mapa', { attributionControl: false, preferCanvas: true });
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 21, maxNativeZoom: 19 }).addTo(map);
+  { maxZoom: 19, maxNativeZoom: 17 }).addTo(map);
 L.control.attribution({ prefix: false }).addAttribution('Esri, Maxar').addTo(map);
 
 const camadas = {};       // chave fazenda -> {talhoes:{cod:layer}, rede:layerGroup, sede:marker}
@@ -45,7 +45,23 @@ if (boundsGeral) setTimeout(() => {
   map.fitBounds(boundsGeral, { padding: [24, 24] });
 }, 0);
 
+function desseleciona() {
+  document.getElementById('ficha').classList.remove('on');
+  if (selecionado) {
+    const ant = camadas[selecionado.faz].talhoes[selecionado.cod];
+    if (ant) ant.setStyle({ weight: 1, fillOpacity: .12 });
+    document.querySelectorAll('.talhoes button.sel').forEach(b => b.classList.remove('sel'));
+    selecionado = null;
+  }
+  camadaSelecao.clearLayers();
+}
+
 function seleciona(faz, cod) {
+  if (selecionado && selecionado.faz === faz && selecionado.cod === cod) {
+    desseleciona();
+    return;
+  }
+
   const d = FAZENDAS[faz];
   const r = d.rotas.find(x => x.t === cod);
   if (!r) return;
@@ -83,16 +99,8 @@ function seleciona(faz, cod) {
   document.getElementById('ficha').classList.add('on');
 }
 
-document.querySelector('#ficha .fechar').onclick = () => {
-  document.getElementById('ficha').classList.remove('on');
-  if (selecionado) {
-    const ant = camadas[selecionado.faz].talhoes[selecionado.cod];
-    if (ant) ant.setStyle({ weight: 1, fillOpacity: .12 });
-    document.querySelectorAll('.talhoes button.sel').forEach(b => b.classList.remove('sel'));
-    selecionado = null;
-  }
-  camadaSelecao.clearLayers();
-};
+document.querySelector('#ficha .fechar').onclick = desseleciona;
+map.on('click', desseleciona);
 
 // --- sidebar: lista de fazendas / talhões ---
 const lista = document.getElementById('lista');
@@ -252,7 +260,7 @@ let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
 function carregaCamadasExtras(cb) {
   if (camadasExtrasCarregadas) { cb(); return; }
   const s = document.createElement('script');
-  s.src = 'malha_estradas.js?v=20260915b';
+  s.src = 'malha_estradas.js?v=20260915c';
   s.onload = () => { camadasExtrasCarregadas = true; cb(); };
   document.head.appendChild(s);
 }

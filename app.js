@@ -168,7 +168,6 @@ busca.oninput = () => {
 const CAMPOS = [
   { k: 'fazenda', label: 'Fazenda', get: r => r.fazenda },
   { k: 'talhao', label: 'Talhão', get: r => r.talhao },
-  { k: 'situacao', label: 'Situação', get: r => r.situacao },
   { k: 'max', label: 'Distância máxima (km)', get: r => fmt(r.max) },
   { k: 'min', label: 'Distância mínima (km)', get: r => fmt(r.min) },
   { k: 'reta', label: 'Distância reta (km)', get: r => fmt(r.reta) },
@@ -260,7 +259,7 @@ let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
 function carregaCamadasExtras(cb) {
   if (camadasExtrasCarregadas) { cb(); return; }
   const s = document.createElement('script');
-  s.src = 'malha_estradas.js?v=20260915d';
+  s.src = 'malha_estradas.js?v=20260915f';
   s.onload = () => { camadasExtrasCarregadas = true; cb(); };
   document.head.appendChild(s);
 }
@@ -293,7 +292,7 @@ document.getElementById('ckTracadas').onchange = e => {
 };
 
 document.getElementById('expTodos').onclick = () => exportaCSV(CAMPOS.map(c => c.k), 'talhoes_todos_os_dados.csv');
-document.getElementById('expMax').onclick = () => exportaCSV(['fazenda', 'talhao', 'situacao', 'max'], 'talhoes_distancia_maxima.csv');
+document.getElementById('expMax').onclick = () => exportaCSV(['fazenda', 'talhao', 'max'], 'talhoes_distancia_maxima.csv');
 document.getElementById('expCampos').onclick = () => modalCampos.classList.add('on');
 
 const modalInfo = document.getElementById('modalInfo');

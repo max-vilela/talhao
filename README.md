@@ -99,6 +99,11 @@ Quando o KML do Google Earth muda (nova sede, malha corrigida na bancada, nova f
    `scripts/gera_bancada_unificada.py`.
 7. Commit e push — o GitHub Pages publica sozinho.
 
+Sempre que mexer em `app.js`, `mapa.css`, `dados_mapa.js` ou `malha_estradas.js`: atualize o
+`?v=AAAAMMDDx` na tag que carrega cada um (em `index.html`, e dentro do próprio `app.js` para
+`malha_estradas.js`). Sem isso o navegador de quem já visitou o site guarda a versão antiga em
+cache e as mudanças não aparecem até um refresh forçado.
+
 ## Publicação
 
 GitHub Pages, branch `main`, raiz do repositório (Settings → Pages). Site 100% estático — sem

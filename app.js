@@ -252,7 +252,7 @@ let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
 function carregaCamadasExtras(cb) {
   if (camadasExtrasCarregadas) { cb(); return; }
   const s = document.createElement('script');
-  s.src = 'malha_estradas.js';
+  s.src = 'malha_estradas.js?v=20260915a';
   s.onload = () => { camadasExtrasCarregadas = true; cb(); };
   document.head.appendChild(s);
 }

@@ -93,6 +93,7 @@ function seleciona(faz, cod, { zoom = false } = {}) {
   const btn = document.querySelector(`.talhoes button[data-faz="${faz}"][data-cod="${CSS.escape(cod)}"]`);
   if (btn) { btn.classList.add('sel'); btn.closest('details').open = true; btn.scrollIntoView({ block: 'nearest' }); }
 
+  document.getElementById('ficha').style.borderLeftColor = CORES[faz];
   document.getElementById('ft').textContent = cod;
   document.getElementById('ff').textContent = d.nome;
   document.getElementById('fn').innerHTML = `
@@ -163,7 +164,7 @@ busca.oninput = () => {
   }
   resultados.innerHTML = achados.map(a => `<button class="res" data-faz="${a.faz}" data-cod="${a.cod}">
     <b>${a.cod}</b><span>${FAZENDAS[a.faz].nome}</span></button>`).join('')
-    || '<p style="padding:10px 2px;color:var(--mut);font-size:12.5px">Nada encontrado.</p>';
+    || '<p class="vazio">Nada encontrado.</p>';
   resultados.querySelectorAll('.res').forEach(b => b.onclick = () => {
     seleciona(b.dataset.faz, b.dataset.cod, { zoom: true });
     busca.value = ''; resultados.innerHTML = '';
@@ -404,11 +405,6 @@ document.addEventListener('click', e => {
 const avisos = [];
 avisos.push('<b>Java</b> e <b>Ponte de Pedra</b>: entrega da colheita é feita na sede do Tucano — a ' +
   'distância de cada talhão dessas duas fazendas é medida até lá.');
-const naoConferidas = ORDEM.filter(f => FAZENDAS[f].situacao_label === 'Calculada, não conferida');
-if (naoConferidas.length) {
-  avisos.push(`${naoConferidas.map(f => `<b>${FAZENDAS[f].nome}</b>`).join(' e ')}: calculado, ` +
-    'ainda não conferido em campo.');
-}
 for (const faz of ORDEM) {
   const n = semAcesso(faz);
   if (n > 0) avisos.push(`<b>${FAZENDAS[faz].nome}</b>: ${n} talh${n === 1 ? 'ão' : 'ões'} sem estrada mapeada até a sede.`);

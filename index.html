@@ -1,16 +1,19 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Distâncias dos talhões até a sede</title>
-<meta name="description" content="Distância de cada talhão até a sede da fazenda, medida pelas estradas.">
+<title>Lívio &amp; Outro — Mapa de Talhões</title>
+<meta name="description" content="Lívio &amp; Outro — distância de cada talhão até a sede da fazenda, medida pelas estradas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="leaflet.css">
-<link rel="stylesheet" href="mapa.css?v=20260915b">
+<link rel="stylesheet" href="mapa.css?v=20260916d">
 </head><body>
 <div id="shell">
 
   <header class="topo">
     <button id="btSidebar" aria-label="Mostrar lista de talhões">☰</button>
-    <h1>Distâncias dos talhões</h1>
+    <h1><span class="marca">Lívio &amp; Outro</span><span class="sep" aria-hidden="true"></span>Mapa de Talhões</h1>
     <nav class="navtop">
       <div class="navitem">
         <button class="navbt" id="btExportar" aria-expanded="false">Exportar <span class="seta">▾</span></button>
@@ -32,8 +35,8 @@
     <aside id="sidebar">
       <div id="buscaWrap">
         <input type="search" id="busca" placeholder="Buscar talhão — ex.: T-05, 05B…" autocomplete="off">
+        <div id="resultados"></div>
       </div>
-      <div id="resultados"></div>
       <div id="lista"></div>
       <div id="pendentes">
         <b>Java e Ponte de Pedra entregam a colheita na sede do Tucano</b> — por isso a distância
@@ -82,5 +85,5 @@
 
 <script src="leaflet.js"></script>
 <script src="dados_mapa.js?v=20260916c"></script>
-<script src="app.js?v=20260916c"></script>
+<script src="app.js?v=20260916e"></script>
 </body></html>

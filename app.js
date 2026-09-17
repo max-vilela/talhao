@@ -19,6 +19,7 @@ for (const faz of ORDEM) {
   const d = FAZENDAS[faz];
   const cor = CORES[faz];
   const grupo = { talhoes: {}, rede: L.layerGroup() };
+  let boundsF = null;
 
   for (const [cod, anel] of Object.entries(d.talhoes)) {
     const poly = L.polygon(anel, { color: cor, weight: 1, fillOpacity: .12, fillColor: cor })
@@ -32,6 +33,7 @@ for (const faz of ORDEM) {
     grupo.talhoes[cod] = poly;
     const b = poly.getBounds();
     boundsGeral = boundsGeral ? boundsGeral.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
+    boundsF = boundsF ? boundsF.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
   }
 
   for (const r of d.rotas) {
@@ -42,12 +44,40 @@ for (const faz of ORDEM) {
     .addTo(map)
     .bindTooltip(`Sede ${d.nome}`, { direction: 'top' });
 
+  if (boundsF) {
+    grupo.rotuloFazenda = L.circleMarker(boundsF.getCenter(), { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
+      .bindTooltip(d.nome, { permanent: true, direction: 'center', className: 'rotulo-fazenda', interactive: false });
+  }
+
   camadas[faz] = grupo;
 }
 if (boundsGeral) setTimeout(() => {
   map.invalidateSize();
   map.fitBounds(boundsGeral, { padding: [24, 24] });
 }, 0);
+
+// --- rotulos por zoom: talhao so perto, nome da fazenda quando afastado ---
+const ZOOM_ROTULOS_TALHAO = 13;
+let rotulosTalhaoLigados = true;
+function atualizaRotulos() {
+  const perto = map.getZoom() >= ZOOM_ROTULOS_TALHAO;
+  const mostrarTalhoes = rotulosTalhaoLigados && perto;
+  for (const faz of ORDEM) {
+    const grupo = camadas[faz];
+    for (const [cod, poly] of Object.entries(grupo.talhoes)) {
+      if (mostrarTalhoes) {
+        if (!poly.getTooltip()) poly.bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
+      } else {
+        poly.unbindTooltip();
+      }
+    }
+    if (!grupo.rotuloFazenda) continue;
+    if (perto) { if (map.hasLayer(grupo.rotuloFazenda)) map.removeLayer(grupo.rotuloFazenda); }
+    else { if (!map.hasLayer(grupo.rotuloFazenda)) grupo.rotuloFazenda.addTo(map); }
+  }
+}
+map.on('zoomend', atualizaRotulos);
+setTimeout(atualizaRotulos, 0);
 
 function desseleciona() {
   document.getElementById('ficha').classList.remove('on');
@@ -255,11 +285,8 @@ document.getElementById('ckContorno').onchange = e => {
     poly.setStyle(visivel ? { opacity: 1, fillOpacity: .12 } : { opacity: 0, fillOpacity: 0 });
 };
 document.getElementById('ckRotulos').onchange = e => {
-  const visivel = e.target.checked;
-  for (const faz of ORDEM) for (const [cod, poly] of Object.entries(camadas[faz].talhoes)) {
-    if (visivel) poly.bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
-    else poly.unbindTooltip();
-  }
+  rotulosTalhaoLigados = e.target.checked;
+  atualizaRotulos();
 };
 
 let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;

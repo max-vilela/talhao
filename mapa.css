@@ -31,6 +31,7 @@ header.topo{display:flex;align-items:center;gap:14px;padding:9px 16px;
 header.topo h1{font-size:14.5px;margin:0;letter-spacing:-.01em;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;min-width:0;display:flex;align-items:baseline;gap:9px}
 header.topo h1 .marca{font-weight:700;color:var(--acc-forte);letter-spacing:-.01em}
+header.topo h1 .logo-marca{width:22px;height:22px;flex:0 0 auto;align-self:center}
 header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-fraco);flex:0 0 auto}
 #btSidebar{display:none;font:inherit;font-size:13px;border:1px solid var(--linha);background:#fff;
   border-radius:var(--raio-sm);padding:7px 10px;cursor:pointer;margin-right:4px;

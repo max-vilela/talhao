@@ -14,6 +14,9 @@ a{color:var(--acc)}
 header.topo{padding-block:34px 22px;border-bottom:1px solid var(--linha);margin-bottom:26px}
 header.topo h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
 header.topo p{margin:0;color:var(--mut);max-width:62ch}
+header.topo .marca-topo{display:flex;align-items:center;gap:14px}
+header.topo .marca-topo h1{margin:0}
+header.topo .logo-marca{width:44px;height:44px;flex:0 0 auto}
 nav.volta{padding-top:18px}
 nav.volta a{text-decoration:none;font-size:13.5px;color:var(--mut)}
 nav.volta a:hover{color:var(--acc)}

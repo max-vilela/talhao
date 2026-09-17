@@ -672,11 +672,12 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:13px/1.
 #wrap{display:flex;height:100%}
 #map{flex:1;min-width:0;background:#1a1d16}
 #side{width:380px;flex:none;background:var(--pan);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
-h1{font-size:15px;margin:0;padding:12px 14px 9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+h1{font-size:15px;margin:0;padding:12px 14px 9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:0 0 auto}
 h1 .logo-mini{width:26px;height:26px;flex:0 0 auto}
 h1 small{display:block;font-weight:400;color:var(--mut);font-size:11.5px;margin-top:3px;flex-basis:100%}
+#sideScroll{flex:1;overflow-y:auto;min-height:0}
 .sec{border-top:1px solid var(--line);padding:10px 14px}
-.sec h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--mut);margin:0 0 8px}
+.sec h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--mut);margin:0;display:inline-flex;align-items:center;gap:7px}
 button{font:inherit;background:#272b21;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
 button:hover{background:#343a28}
 button.on{background:var(--acc);color:#1a1a0d;border-color:var(--acc);font-weight:600}
@@ -685,7 +686,35 @@ button.sm{padding:3px 7px;font-size:11px}
 .row{display:flex;gap:6px;flex-wrap:wrap}
 label.ck{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}
 .sw{width:22px;height:0;border-top-width:3px;border-top-style:solid;flex:none}
-#tbl{flex:1;overflow:auto;min-height:120px}
+#tbl{overflow:auto;max-height:340px;margin-top:8px}
+/* acordeao */
+details.acc{border-top:1px solid var(--line)}
+details.acc>summary{list-style:none;cursor:pointer;padding:10px 14px;display:flex;align-items:center;
+  justify-content:space-between;user-select:none}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary::after{content:'▸';color:var(--mut);font-size:11px;transition:transform .15s}
+details.acc[open]>summary::after{transform:rotate(90deg)}
+details.acc>summary:hover{background:#20241b}
+details.acc>.corpo{padding:0 14px 12px}
+details.sub{border-top:1px solid #22261c;margin-top:6px}
+details.sub>summary{list-style:none;cursor:pointer;padding:6px 2px;display:flex;align-items:center;
+  justify-content:space-between;font-size:12px;color:var(--tx);user-select:none}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary::after{content:'▸';color:var(--mut);font-size:10px;transition:transform .15s}
+details.sub[open]>summary::after{transform:rotate(90deg)}
+.badge-n{display:inline-block;min-width:18px;text-align:center;padding:1px 6px;border-radius:99px;
+  font-size:10.5px;background:#2c3122;color:var(--mut);font-variant-numeric:tabular-nums}
+.modos-fixo{padding:10px 14px;border-top:1px solid var(--line);flex:0 0 auto}
+.modos-fixo .row button{flex:1 1 40%}
+.footer-acoes{border-top:1px solid var(--line);padding:9px 14px;flex:0 0 auto;background:#181b14}
+.kbd{display:inline-block;background:#0e0f0c;border:1px solid #34392c;border-radius:4px;padding:0 5px;
+  font:11px ui-monospace,monospace;color:var(--mut)}
+#ctxMenu{position:fixed;z-index:3000;background:#1b1e17;border:1px solid #2f342a;border-radius:8px;
+  padding:4px;box-shadow:0 8px 26px #000a;min-width:190px}
+#ctxMenu button{display:block;width:100%;text-align:left;background:none;border:0;padding:7px 10px;
+  border-radius:5px;font-size:12.5px}
+#ctxMenu button:hover{background:#272b21}
+#ctxMenu hr{border:0;border-top:1px solid #2f342a;margin:4px 2px}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{position:sticky;top:0;background:#232719;text-align:right;padding:6px 8px;color:var(--mut);cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--line)}
 th:first-child{text-align:left}
@@ -731,9 +760,9 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
   <button id="texit" class="sm">Sair do desenho</button>
 </div>
 <div id="side">
-  <h1><img src="logo.png" alt="" class="logo-mini">Bancada de Estradas — Ponte de Pedra + Galheiro + Java + Mato Grosso + Panamá + Promissão + Tucano<small>Desenhe as estradas que faltam. Pode desenhar várias seguidas, sem sair do modo.</small></h1>
+  <h1><img src="logo.png" alt="" class="logo-mini">Bancada de Estradas — Ponte de Pedra + Galheiro + Java + Mato Grosso + Panamá + Promissão + Tucano<small>Desenhe as estradas que faltam. Pode desenhar várias seguidas, sem sair do modo. Clique com o botão direito no mapa pra atalhos.</small></h1>
 
-  <div class="sec"><h2>Desenhar</h2>
+  <div class="modos-fixo">
     <div class="row">
       <button id="bnew" class="go">Desenhar estradas</button>
       <button id="bblock">Marcar divisa sem estrada</button>
@@ -741,56 +770,83 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
       <button id="bplan">Planejar talhão novo</button>
     </div>
     <p class="hint" id="chint">No modo desenho: cada clique põe um ponto. Dois cliques (ou "Terminar estrada") fecham a estrada e já começam a próxima. Os pontos grudam nas estradas existentes quando você clica perto.</p>
-    <p class="hint sub" id="lstTit" style="display:none">
-      <span class="sw" style="border-color:#38d39f"></span> Estradas novas desenhadas agora (ainda não salvas)</p>
-    <ul class="lst" id="lst"></ul>
-    <ul class="lst" id="lstRem"></ul>
-    <p class="hint sub" id="lstPlanTit" style="display:none">
-      <span class="sw" style="border-color:#b967ff"></span> Talhões planejados agora (ainda não salvos)</p>
-    <ul class="lst" id="lstPlan"></ul>
-    <div class="row" style="margin-top:9px">
+  </div>
+
+  <div id="sideScroll">
+    <details class="acc" id="accCor" open>
+      <summary><h2>Minhas correções <span class="badge-n" id="badgeCor">0</span></h2></summary>
+      <div class="corpo">
+        <details class="sub" id="subLst">
+          <summary><span><span class="sw" style="border-color:#38d39f"></span> Estradas novas desenhadas</span><span class="badge-n" id="badgeLst">0</span></summary>
+          <ul class="lst" id="lst"></ul>
+        </details>
+        <details class="sub" id="subRem">
+          <summary><span><span class="sw" style="border-color:#ff3b3b"></span> Marcadas pra apagar</span><span class="badge-n" id="badgeRem">0</span></summary>
+          <ul class="lst" id="lstRem"></ul>
+        </details>
+        <details class="sub" id="subPlan">
+          <summary><span><span class="sw" style="border-color:#b967ff"></span> Talhões planejados</span><span class="badge-n" id="badgePlan">0</span></summary>
+          <ul class="lst" id="lstPlan"></ul>
+        </details>
+      </div>
+    </details>
+
+    <details class="acc" id="accImg">
+      <summary><h2>Imagem de satélite</h2></summary>
+      <div class="corpo">
+        <div class="row" id="bases">
+          <button class="sm on" data-b="google">Google</button>
+          <button class="sm" data-b="esri">Esri / Maxar</button>
+          <button class="sm" data-b="esri2">Esri (alt.)</button>
+          <button class="sm" data-b="google2">Google (alt.)</button>
+        </div>
+        <p class="hint">As duas bases são de datas diferentes. Se um carreador não aparece numa, tente a outra — muitas vezes uma delas é mais nova.</p>
+        <p class="hint" id="attrib">Imagem: Google</p>
+        <p class="hint" id="tdiag">carregando…</p>
+      </div>
+    </details>
+
+    <details class="acc" id="accCam" open>
+      <summary><h2>Camadas</h2></summary>
+      <div class="corpo">
+        <label class="ck"><span class="sw" id="swM" style="border-color:#ffffff"></span><input type="checkbox" id="cM" checked> Malha usada no cálculo (divisas)
+          <input type="color" id="corMalha" value="#ffffff" title="Cor da malha" style="margin-left:auto;width:26px;height:20px;padding:0;border:1px solid var(--line);background:none;cursor:pointer"></label>
+        <label class="ck"><span class="sw" style="border-color:#ff8a00"></span><input type="checkbox" id="cE" checked> Estradas que eu tracei na imagem</label>
+        <label class="ck"><span class="sw" style="border-color:#38d39f"></span><input type="checkbox" id="cU" checked> Estradas que você desenhou</label>
+        <label class="ck"><span class="sw" style="border-color:#ff3b3b"></span><input type="checkbox" id="cX" checked> Traçado ERRADO (a substituir)</label>
+        <label class="ck"><span class="sw" style="border-color:#ff2d2d"></span><input type="checkbox" id="cR" checked> Rota do talhão selecionado</label>
+        <label class="ck"><span class="sw" style="border-color:#7ec8ff"></span><input type="checkbox" id="cT" checked> Contorno dos talhões</label>
+        <label class="ck"><span class="sw" style="border-color:transparent"></span><input type="checkbox" id="cL" checked> Nomes dos talhões</label>
+        <label class="ck"><span class="sw" style="border-color:#b967ff"></span><input type="checkbox" id="cP" checked> Talhões planejados (novos)</label>
+        <div class="row" style="margin-top:8px"><button class="sm" id="bfit">Ver tudo</button></div>
+        <div class="row" style="margin-top:6px" id="sedeBtns"></div>
+        <p class="hint sub" id="gotosErradasTit" style="display:none">
+          <span class="sw" style="border-color:#ff3b3b"></span> Traçados errados — clique pra ir até lá e corrigir</p>
+        <div class="row" style="margin-top:4px" id="gotosErradas"></div>
+        <p class="hint sub" id="gotosTit" style="display:none">
+          <span class="sw" style="border-color:#ff8a00"></span> Estradas já cadastradas</p>
+        <div class="row" style="margin-top:4px" id="gotos"></div>
+      </div>
+    </details>
+
+    <details class="acc" id="accDist">
+      <summary><h2>Distâncias até a sede <span class="badge-n" id="badgeTbl">0</span></h2></summary>
+      <div class="corpo">
+        <p class="hint" style="margin:0 0 6px">Clique num talhão pra ver a rota. <b>Máx</b> = ponto mais extremo, pelas estradas.</p>
+        <div id="tbl"></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-acoes">
+    <div class="row">
       <button id="bcopy" class="on">Copiar correções</button>
-      <button id="bdl">Baixar .json</button>
-      <button id="bclr">Limpar</button>
+      <button id="bdl">Baixar .json <span class="kbd">Ctrl+S</span></button>
+      <button id="bundoBtn">↶ Desfazer <span class="kbd">Ctrl+Z</span></button>
+      <button id="bclr">Limpar tudo</button>
     </div>
     <p class="hint" id="cstat">Nenhuma correção ainda.</p>
   </div>
-
-  <div class="sec"><h2>Imagem de satélite</h2>
-    <div class="row" id="bases">
-      <button class="sm on" data-b="google">Google</button>
-      <button class="sm" data-b="esri">Esri / Maxar</button>
-      <button class="sm" data-b="esri2">Esri (alt.)</button>
-      <button class="sm" data-b="google2">Google (alt.)</button>
-    </div>
-    <p class="hint">As duas bases são de datas diferentes. Se um carreador não aparece numa, tente a outra — muitas vezes uma delas é mais nova.</p>
-    <p class="hint" id="attrib">Imagem: Google</p>
-    <p class="hint" id="tdiag">carregando…</p>
-  </div>
-  <div class="sec"><h2>Camadas</h2>
-    <label class="ck"><span class="sw" id="swM" style="border-color:#ffffff"></span><input type="checkbox" id="cM" checked> Malha usada no cálculo (divisas)
-      <input type="color" id="corMalha" value="#ffffff" title="Cor da malha" style="margin-left:auto;width:26px;height:20px;padding:0;border:1px solid var(--line);background:none;cursor:pointer"></label>
-    <label class="ck"><span class="sw" style="border-color:#ff8a00"></span><input type="checkbox" id="cE" checked> Estradas que eu tracei na imagem</label>
-    <label class="ck"><span class="sw" style="border-color:#38d39f"></span><input type="checkbox" id="cU" checked> Estradas que você desenhou</label>
-    <label class="ck"><span class="sw" style="border-color:#ff3b3b"></span><input type="checkbox" id="cX" checked> Traçado ERRADO (a substituir)</label>
-    <label class="ck"><span class="sw" style="border-color:#ff2d2d"></span><input type="checkbox" id="cR" checked> Rota do talhão selecionado</label>
-    <label class="ck"><span class="sw" style="border-color:#7ec8ff"></span><input type="checkbox" id="cT" checked> Contorno dos talhões</label>
-    <label class="ck"><span class="sw" style="border-color:transparent"></span><input type="checkbox" id="cL" checked> Nomes dos talhões</label>
-    <label class="ck"><span class="sw" style="border-color:#b967ff"></span><input type="checkbox" id="cP" checked> Talhões planejados (novos)</label>
-    <div class="row" style="margin-top:8px"><button class="sm" id="bfit">Ver tudo</button></div>
-    <div class="row" style="margin-top:6px" id="sedeBtns"></div>
-    <p class="hint sub" id="gotosErradasTit" style="display:none">
-      <span class="sw" style="border-color:#ff3b3b"></span> Traçados errados — clique pra ir até lá e corrigir</p>
-    <div class="row" style="margin-top:4px" id="gotosErradas"></div>
-    <p class="hint sub" id="gotosTit" style="display:none">
-      <span class="sw" style="border-color:#ff8a00"></span> Estradas já cadastradas</p>
-    <div class="row" style="margin-top:4px" id="gotos"></div>
-  </div>
-
-  <div class="sec" style="padding-bottom:6px"><h2>Distâncias até a sede (prévia)</h2>
-    <p class="hint" style="margin:0 0 6px">Clique num talhão pra ver a rota. <b>Máx</b> = ponto mais extremo, pelas estradas.</p>
-  </div>
-  <div id="tbl"></div>
 </div></div>
 <div id="aviso"><b>As imagens de satélite não estão carregando.</b>
  Os talhões e as estradas continuam funcionando por cima do fundo escuro, mas sem a imagem
@@ -847,13 +903,23 @@ D.talhoes.forEach(f=>{f.c.forEach(p=>{if(okLL(p))bnds.push(p);});
   const cor=f.cor||'#7ec8ff';
   const po=L.polygon(f.c,{color:cor,weight:1,fill:true,fillColor:cor,fillOpacity:.06}).addTo(gT);
   po.on('click',e=>{if(mode)return;L.DomEvent.stop(e);select(f.n);});
+  po.on('contextmenu',e=>{L.DomEvent.preventDefault(e.originalEvent);L.DomEvent.stopPropagation(e);
+   if(mode)return;
+   menuContexto(e.originalEvent.clientX,e.originalEvent.clientY,[
+    {label:'Ver rota até a sede',acao:()=>select(f.n)},
+   ]);});
   L.marker(po.getBounds().getCenter(),{icon:L.divIcon({className:'',html:'<div class="lbl">'+(f.label||f.n)+'</div>'})}).addTo(gL);});
 let corMalha='#ffffff';
 try{const s=localStorage.getItem('malha_cor');if(s)corMalha=s;}catch(e){}
 const malhaLayers=[];
 D.malha.forEach((l,i)=>{const pl=L.polyline(l,{color:corMalha,weight:2.2,opacity:.8}).addTo(gM);
   malhaLayers.push(pl);
-  pl.on('click',e=>{if(mode==='block'){L.DomEvent.stop(e);block(i,pl);}});addSnap(l);});
+  pl.on('click',e=>{if(mode==='block'){L.DomEvent.stop(e);block(i,pl);}});
+  pl.on('contextmenu',e=>{L.DomEvent.preventDefault(e.originalEvent);L.DomEvent.stopPropagation(e);
+   menuContexto(e.originalEvent.clientX,e.originalEvent.clientY,[
+    {label:'Marcar como divisa sem estrada',acao:()=>block(i,pl)},
+   ]);});
+  addSnap(l);});
 const inCorMalha=document.getElementById('corMalha');
 inCorMalha.value=corMalha;
 document.getElementById('swM').style.borderColor=corMalha;
@@ -872,6 +938,12 @@ D.tracadas.forEach((t,i)=>{const pl=L.polyline(t.pts,{color:'#ff8a00',weight:4,o
   .bindTooltip(t.nome,{sticky:true});addSnap(t.pts);
   tracadaLayers.push({nome:t.nome,pl});
   pl.on('click',e=>{if(mode==='editar'){L.DomEvent.stop(e);toggleRemover(t.nome,pl);}});
+  pl.on('contextmenu',e=>{L.DomEvent.preventDefault(e.originalEvent);L.DomEvent.stopPropagation(e);
+   const marcada=COR.remover.includes(t.nome);
+   menuContexto(e.originalEvent.clientX,e.originalEvent.clientY,[
+    {label:marcada?'↶ Desfazer marcação de apagar':'✕ Marcar pra apagar',acao:()=>toggleRemover(t.nome,pl)},
+    {label:'Ver/zoom',acao:()=>map.fitBounds(pl.getBounds(),{padding:[60,60]})},
+   ]);});
   const b=document.createElement('button');b.className='sm';b.textContent='→ '+t.nome.split(' (')[0];
   b.onclick=()=>map.fitBounds(L.polyline(t.pts).getBounds(),{padding:[60,60]});
   document.getElementById('gotos').appendChild(b);});
@@ -908,6 +980,7 @@ function draw(){const r=[...D.rotas].sort((a,b)=>(a[sk]>b[sk]?1:-1)*sd);
  let h='<table><thead><tr><th data-k="faz">Fazenda</th><th data-k="t">Talhão</th><th data-k="max">Máx</th><th data-k="min">Mín</th><th data-k="reta">Reta</th><th data-k="f">Fator</th></tr></thead><tbody>';
  r.forEach(x=>{h+='<tr data-t="'+x.t+'"'+(x.t===selT?' class="sel"':'')+'><td>'+x.faz+'</td><td>'+(x.label||x.t)+'</td><td>'+fmt(x.max)+'</td><td>'+fmt(x.min)+'</td><td>'+fmt(x.reta)+'</td><td><span class="badge'+(x.f>=3?' w':'')+'">'+x.f.toFixed(2).replace('.',',')+'</span></td></tr>';});
  document.getElementById('tbl').innerHTML=h+'</tbody></table>';
+ document.getElementById('badgeTbl').textContent=r.length;
  document.querySelectorAll('#tbl th').forEach(t=>t.onclick=()=>{const k=t.dataset.k;if(k===sk)sd*=-1;else{sk=k;sd=k==='t'?1:-1;}draw();});
  document.querySelectorAll('#tbl tr[data-t]').forEach(t=>t.onclick=()=>select(t.dataset.t));}
 function select(n){selT=n;const r=D.rotas.find(x=>x.t===n);gR.clearLayers();if(!r)return;
@@ -925,7 +998,12 @@ let mode=null,pts=[],nDraw=0,ptsT=[];
 const bar=document.getElementById('bar'),barT=document.getElementById('barT');
 function save(){try{localStorage.setItem('cor_unificada',JSON.stringify(COR));}catch(e){}}
 function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
-  L.polyline(e.pts,{color:'#38d39f',weight:4}).addTo(gU).bindTooltip('sua estrada '+(i+1),{sticky:true});});
+  const plU=L.polyline(e.pts,{color:'#38d39f',weight:4}).addTo(gU).bindTooltip('sua estrada '+(i+1),{sticky:true});
+  plU.on('contextmenu',ev=>{L.DomEvent.preventDefault(ev.originalEvent);L.DomEvent.stopPropagation(ev);
+   menuContexto(ev.originalEvent.clientX,ev.originalEvent.clientY,[
+    {label:'Ver/zoom',acao:()=>map.fitBounds(plU.getBounds(),{padding:[60,60]})},
+    {label:'✕ Apagar esta estrada',acao:()=>{snapshot();COR.estradas.splice(i,1);save();renderU();stat();}},
+   ]);});});
  const ul=document.getElementById('lst');ul.innerHTML='';
  COR.estradas.forEach((e,i)=>{let d=0;for(let j=1;j<e.pts.length;j++)d+=map.distance(e.pts[j-1],e.pts[j]);
   const li=document.createElement('li');
@@ -933,13 +1011,17 @@ function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const z=document.createElement('button');z.className='sm';z.textContent='ver';
   z.onclick=()=>map.fitBounds(L.polyline(e.pts).getBounds(),{padding:[60,60]});
   const x=document.createElement('button');x.className='sm';x.textContent='apagar';
-  x.onclick=()=>{COR.estradas.splice(i,1);save();renderU();stat();};
+  x.onclick=()=>{snapshot();COR.estradas.splice(i,1);save();renderU();stat();};
   const w=document.createElement('span');w.append(z,' ',x);li.appendChild(w);ul.appendChild(li);});
- document.getElementById('lstTit').style.display=COR.estradas.length?'':'none';
  gPlan.clearLayers();(COR.talhoes_novos||[]).forEach((t,i)=>{
   const po=L.polygon(t.pts,{color:'#b967ff',weight:2,dashArray:'6,4',fill:true,fillColor:'#b967ff',fillOpacity:.15}).addTo(gPlan)
    .bindTooltip(t.codigo,{permanent:true,direction:'center',className:'rlbl'});
-  po.on('click',e=>{if(mode)return;L.DomEvent.stop(e);map.fitBounds(po.getBounds(),{padding:[60,60]});});});
+  po.on('click',e=>{if(mode)return;L.DomEvent.stop(e);map.fitBounds(po.getBounds(),{padding:[60,60]});});
+  po.on('contextmenu',ev=>{L.DomEvent.preventDefault(ev.originalEvent);L.DomEvent.stopPropagation(ev);
+   menuContexto(ev.originalEvent.clientX,ev.originalEvent.clientY,[
+    {label:'Ver/zoom',acao:()=>map.fitBounds(po.getBounds(),{padding:[60,60]})},
+    {label:'✕ Apagar este talhão planejado',acao:()=>{snapshot();COR.talhoes_novos.splice(i,1);save();renderU();}},
+   ]);});});
  const ulP=document.getElementById('lstPlan');ulP.innerHTML='';
  (COR.talhoes_novos||[]).forEach((t,i)=>{
   const li=document.createElement('li');
@@ -947,10 +1029,14 @@ function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const z=document.createElement('button');z.className='sm';z.textContent='ver';
   z.onclick=()=>map.fitBounds(L.polygon(t.pts).getBounds(),{padding:[60,60]});
   const x=document.createElement('button');x.className='sm';x.textContent='apagar';
-  x.onclick=()=>{COR.talhoes_novos.splice(i,1);save();renderU();};
+  x.onclick=()=>{snapshot();COR.talhoes_novos.splice(i,1);save();renderU();};
   const w=document.createElement('span');w.append(z,' ',x);li.appendChild(w);ulP.appendChild(li);});
- document.getElementById('lstPlanTit').style.display=(COR.talhoes_novos||[]).length?'':'none';
- stat();}
+ atualizaBadges();stat();}
+function atualizaBadges(){
+ document.getElementById('badgeLst').textContent=COR.estradas.length;
+ document.getElementById('badgeRem').textContent=COR.remover.length;
+ document.getElementById('badgePlan').textContent=(COR.talhoes_novos||[]).length;
+ document.getElementById('badgeCor').textContent=COR.estradas.length+COR.remover.length+(COR.talhoes_novos||[]).length+COR.divisas_sem_estrada.length;}
 function stat(){const partes=[];
  if(COR.estradas.length)partes.push(COR.estradas.length+' estrada(s) sua(s)');
  if((COR.talhoes_novos||[]).length)partes.push(COR.talhoes_novos.length+' talhão(ões) planejado(s)');
@@ -958,6 +1044,7 @@ function stat(){const partes=[];
  if(COR.remover.length)partes.push(COR.remover.length+' estrada(s) existente(s) marcada(s) pra apagar');
  document.getElementById('cstat').textContent=partes.length?partes.join(', ')+'. Salvo no navegador.':'Nenhuma correção ainda.';}
 function toggleRemover(nome,pl){
+ snapshot();
  const i=COR.remover.indexOf(nome);
  if(i===-1){COR.remover.push(nome);pl.setStyle({color:'#ff3b3b',dashArray:'4,6',opacity:.6});}
  else{COR.remover.splice(i,1);pl.setStyle({color:'#ff8a00',dashArray:null,opacity:1});}
@@ -973,7 +1060,7 @@ function renderRem(){
   const d=document.createElement('button');d.className='sm';d.textContent='desfazer';
   d.onclick=()=>{const t=tracadaLayers.find(x=>x.nome===nome);toggleRemover(nome,t.pl);};
   li.appendChild(d);ul.appendChild(li);});
- stat();}
+ atualizaBadges();stat();}
 function setMode(m){mode=m;
  document.getElementById('bnew').classList.toggle('on',m==='draw');
  document.getElementById('bblock').classList.toggle('on',m==='block');
@@ -1009,7 +1096,7 @@ function tmp(){gD.clearLayers();if(pts.length>1)L.polyline(pts,{color:'#38d39f',
  pts.forEach(p=>L.circleMarker(p,{radius:4,color:'#fff',weight:2,fillColor:'#38d39f',fillOpacity:1}).addTo(gD));
  let d=0;for(let i=1;i<pts.length;i++)d+=map.distance(pts[i-1],pts[i]);
  document.getElementById('bmsg').textContent='Estrada '+(COR.estradas.length+1)+' — '+pts.length+' ponto(s) · '+(d/1000).toFixed(2).replace('.',',')+' km';}
-function endRoad(){if(pts.length>1){COR.estradas.push({pts:pts.slice()});save();renderU();}
+function endRoad(){if(pts.length>1){snapshot();COR.estradas.push({pts:pts.slice()});save();renderU();}
  pts=[];tmp();}
 function exitDraw(){endRoad();pts=[];gD.clearLayers();setMode(null);}
 document.getElementById('bundo').onclick=()=>{pts.pop();tmp();};
@@ -1026,6 +1113,7 @@ function endTalhao(){
  if(!fazSel.value){alert('Escolha a fazenda.');return;}
  const cod=document.getElementById('tCod').value.trim().toUpperCase();
  if(!cod){alert('Digite um código pro talhão (ex.: G-99).');return;}
+ snapshot();
  COR.talhoes_novos=COR.talhoes_novos||[];
  COR.talhoes_novos.push({faz:fazSel.value, fazNome:fazSel.options[fazSel.selectedIndex].text, codigo:cod, pts:ptsT.slice(), obs:''});
  save();renderU();
@@ -1033,7 +1121,23 @@ function endTalhao(){
 document.getElementById('tundo').onclick=()=>{ptsT.pop();tmpT();};
 document.getElementById('tend').onclick=endTalhao;
 document.getElementById('texit').onclick=()=>{ptsT=[];tmpT();setMode(null);};
+// ---------- desfazer (Ctrl+Z): historico de snapshots do COR, mais o
+// desfazer-ponto de sempre quando ha um desenho em andamento
+let historico=[];
+function snapshot(){try{historico.push(JSON.stringify(COR));}catch(e){}if(historico.length>40)historico.shift();}
+function desfazer(){
+ if(mode==='draw'&&pts.length){pts.pop();tmp();return;}
+ if(mode==='talhao'&&ptsT.length){ptsT.pop();tmpT();return;}
+ if(!historico.length)return;
+ COR=JSON.parse(historico.pop());COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];
+ save();renderU();renderRem();
+}
+document.getElementById('bundoBtn').onclick=desfazer;
 document.addEventListener('keydown',ev=>{
+ const emCampo=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+ if(ev.ctrlKey&&!ev.altKey&&ev.key.toLowerCase()==='s'){ev.preventDefault();document.getElementById('bdl').click();return;}
+ if(ev.ctrlKey&&!ev.altKey&&ev.key.toLowerCase()==='z'&&!emCampo){ev.preventDefault();desfazer();return;}
+ if(emCampo)return;
  if(mode==='draw'){
   if(ev.key==='Enter')endRoad(); if(ev.key==='Escape')exitDraw();
   if(ev.key==='Backspace'){ev.preventDefault();pts.pop();tmp();}
@@ -1042,8 +1146,60 @@ document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'){ptsT=[];tmpT();setMode(null);}
   if(ev.key==='Backspace'){ev.preventDefault();ptsT.pop();tmpT();}
  }});
+// ---------- acordeao: lembra aberto/fechado entre visitas
+document.querySelectorAll('details.acc[id]').forEach(d=>{
+ try{const s=localStorage.getItem('acc_'+d.id);if(s!==null)d.open=s==='1';}catch(e){}
+ d.addEventListener('toggle',()=>{try{localStorage.setItem('acc_'+d.id,d.open?'1':'0');}catch(e){}});
+});
+// ---------- menu de clique direito
+function fecharMenu(){const m=document.getElementById('ctxMenu');if(m)m.remove();}
+function menuContexto(clientX,clientY,itens){
+ fecharMenu();
+ const m=document.createElement('div');m.id='ctxMenu';
+ itens.forEach(it=>{
+  if(it==='-'){m.appendChild(document.createElement('hr'));return;}
+  const b=document.createElement('button');b.textContent=it.label;
+  b.onclick=()=>{fecharMenu();it.acao();};
+  m.appendChild(b);});
+ document.body.appendChild(m);
+ m.style.left=clientX+'px';m.style.top=clientY+'px';
+ requestAnimationFrame(()=>{const r=m.getBoundingClientRect();
+  if(r.right>innerWidth)m.style.left=Math.max(0,clientX-r.width)+'px';
+  if(r.bottom>innerHeight)m.style.top=Math.max(0,clientY-r.height)+'px';});
+}
+document.addEventListener('click',fecharMenu);
+window.addEventListener('blur',fecharMenu);
+map.on('contextmenu',e=>{
+ L.DomEvent.preventDefault(e.originalEvent);
+ const ll=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)];
+ const xy=[e.originalEvent.clientX,e.originalEvent.clientY];
+ if(mode==='draw'){
+  menuContexto(...xy,[
+   {label:'✓ Terminar estrada aqui',acao:()=>{pts.push(snap(e.latlng));endRoad();}},
+   {label:'↶ Desfazer último ponto',acao:()=>{pts.pop();tmp();}},
+   '-',
+   {label:'✕ Cancelar (sem salvar)',acao:()=>{pts=[];tmp();setMode(null);}},
+  ]);
+ } else if(mode==='talhao'){
+  menuContexto(...xy,[
+   {label:'✓ Terminar talhão aqui',acao:()=>{ptsT.push(snap(e.latlng));endTalhao();}},
+   {label:'↶ Desfazer último ponto',acao:()=>{ptsT.pop();tmpT();}},
+   '-',
+   {label:'✕ Cancelar (sem salvar)',acao:()=>{ptsT=[];tmpT();setMode(null);}},
+  ]);
+ } else if(!mode){
+  menuContexto(...xy,[
+   {label:'🛣️ Desenhar estrada a partir daqui',acao:()=>{pts=[snap(e.latlng)];setMode('draw');tmp();}},
+   {label:'🌾 Planejar talhão a partir daqui',acao:()=>{ptsT=[snap(e.latlng)];setMode('talhao');tmpT();}},
+   '-',
+   {label:'↶ Desfazer última correção',acao:desfazer},
+  ]);
+ } else {
+  menuContexto(...xy,[{label:'Sair do modo atual',acao:()=>setMode(null)}]);
+ }
+});
 function block(i,pl){if(COR.divisas_sem_estrada.includes(i))return;
- COR.divisas_sem_estrada.push(i);pl.setStyle({color:'#ff3b3b',dashArray:'4,6'});save();stat();}
+ snapshot();COR.divisas_sem_estrada.push(i);pl.setStyle({color:'#ff3b3b',dashArray:'4,6'});save();atualizaBadges();stat();}
 function perguntaLimpar(){
  if(!(COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length||(COR.talhoes_novos||[]).length))return;
  if(confirm('Já foi enviado. Limpar agora pra não mandar essas mesmas correções de novo na próxima exportação? (Cancelar mantém tudo salvo, pra continuar desenhando antes de enviar.)'))

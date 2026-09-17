@@ -59,6 +59,17 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
 @keyframes cai{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.painel.on{animation:none}}
 
+#ctxMenu{position:fixed;z-index:3000;min-width:210px;background:var(--card);border:1px solid var(--linha);
+  border-radius:var(--raio-md);box-shadow:var(--sombra-lg);padding:6px;animation:cai .12s var(--easing)}
+@media(prefers-reduced-motion:reduce){#ctxMenu{animation:none}}
+#ctxMenu button{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 10px;
+  border-radius:var(--raio-sm);font:inherit;font-size:13px;color:var(--tx);cursor:pointer;
+  transition:background-color .12s var(--easing)}
+#ctxMenu button:hover{background:var(--acc-fraco);color:var(--acc-forte)}
+#ctxMenu button:disabled{color:var(--mut-fraco);cursor:default}
+#ctxMenu button:disabled:hover{background:none}
+#ctxMenu hr{border:0;border-top:1px solid var(--linha);margin:4px 2px}
+
 .camada-ck{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:13px;cursor:pointer;
   border-radius:var(--raio-sm);transition:background-color .15s var(--easing)}
 .camada-ck:hover{background:var(--acc-fraco)}

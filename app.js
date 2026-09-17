@@ -8,6 +8,31 @@ if (typeof ATUALIZADO !== 'undefined') {
   document.getElementById('atualizado').textContent = `Distâncias calculadas em ${ATUALIZADO}.`;
 }
 
+// --- menu de clique direito ---
+function fecharMenuCtx() { const m = document.getElementById('ctxMenu'); if (m) m.remove(); }
+function menuContexto(clientX, clientY, itens) {
+  fecharMenuCtx();
+  const m = document.createElement('div');
+  m.id = 'ctxMenu';
+  itens.forEach(it => {
+    if (it === '-') { m.appendChild(document.createElement('hr')); return; }
+    const b = document.createElement('button');
+    b.textContent = it.label;
+    if (it.desabilitado) b.disabled = true;
+    else b.onclick = () => { fecharMenuCtx(); it.acao(); };
+    m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  m.style.left = clientX + 'px'; m.style.top = clientY + 'px';
+  requestAnimationFrame(() => {
+    const r = m.getBoundingClientRect();
+    if (r.right > innerWidth) m.style.left = Math.max(0, clientX - r.width) + 'px';
+    if (r.bottom > innerHeight) m.style.top = Math.max(0, clientY - r.height) + 'px';
+  });
+}
+document.addEventListener('click', fecharMenuCtx);
+window.addEventListener('blur', fecharMenuCtx);
+
 const map = L.map('mapa', { attributionControl: false, preferCanvas: true });
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   { maxZoom: 19, maxNativeZoom: 17 }).addTo(map);
@@ -31,6 +56,23 @@ for (const faz of ORDEM) {
         L.DomEvent.stopPropagation(e);
         if (simulando) { adicionaPontoSim(e.latlng); return; }
         seleciona(faz, cod);
+      })
+      .on('contextmenu', e => {
+        L.DomEvent.stop(e);
+        menuContexto(e.originalEvent.clientX, e.originalEvent.clientY, [
+          { label: `Selecionar ${cod}`, acao: () => seleciona(faz, cod, { zoom: true }) },
+          { label: 'Copiar código do talhão', acao: () => navigator.clipboard?.writeText(cod).catch(() => {}) },
+          '-',
+          {
+            label: 'Simular nova estrada a partir daqui', acao: () => {
+              if (!(selecionado && selecionado.faz === faz && selecionado.cod === cod)) {
+                seleciona(faz, cod, { zoom: true });
+              }
+              if (!simulando) document.getElementById('btSimular').click();
+              adicionaPontoSim(e.latlng);
+            },
+          },
+        ]);
       })
       .bindTooltip(cod, { permanent: true, direction: 'center', className: 'rotulo-talhao', interactive: false });
     grupo.talhoes[cod] = poly;
@@ -141,6 +183,23 @@ function seleciona(faz, cod, { zoom = false } = {}) {
 
 document.querySelector('#ficha .fechar').onclick = desseleciona;
 map.on('click', e => { if (simulando) { adicionaPontoSim(e.latlng); return; } desseleciona(); });
+map.on('contextmenu', e => {
+  L.DomEvent.preventDefault(e.originalEvent);
+  const xy = [e.originalEvent.clientX, e.originalEvent.clientY];
+  if (simulando) {
+    menuContexto(...xy, [
+      { label: 'Adicionar ponto aqui', acao: () => adicionaPontoSim(e.latlng) },
+      { label: 'Concluir simulação', acao: () => document.getElementById('btSimular').click() },
+      '-',
+      { label: 'Cancelar simulação', acao: limpaSimulacao },
+    ]);
+    return;
+  }
+  menuContexto(...xy, [
+    { label: 'Fechar seleção', acao: desseleciona, desabilitado: !selecionado },
+    { label: 'Ajustar zoom para tudo', acao: () => boundsGeral && map.fitBounds(boundsGeral, { padding: [24, 24] }) },
+  ]);
+});
 
 // --- sidebar: lista de fazendas / talhões ---
 const lista = document.getElementById('lista');

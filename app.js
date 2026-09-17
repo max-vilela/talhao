@@ -4,6 +4,9 @@ const CORES = {
 };
 const ORDEM = ['PPEDRA', 'GALHEIRO', 'JAVA', 'MATO_GROSSO', 'PANAMA', 'PROMISSAO', 'TUCANO'];
 const fmt = m => m == null ? '—' : (m / 1000).toFixed(2).replace('.', ',');
+if (typeof ATUALIZADO !== 'undefined') {
+  document.getElementById('atualizado').textContent = `Distâncias calculadas em ${ATUALIZADO}.`;
+}
 
 const map = L.map('mapa', { attributionControl: false, preferCanvas: true });
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

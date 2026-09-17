@@ -959,6 +959,10 @@ details.sub[open]>summary::after{transform:rotate(90deg)}
 .badge-n{display:inline-block;min-width:18px;text-align:center;padding:1px 6px;border-radius:99px;
   font-size:10.5px;background:#2c3122;color:var(--mut);font-variant-numeric:tabular-nums}
 .modos-fixo{padding:10px 14px;border-top:1px solid var(--line);flex:0 0 auto}
+#infoBloco{flex:0 0 auto;background:#181b14}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.info-grid .iv{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc)}
+.info-grid .il{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
 .modos-fixo .row button{flex:1 1 40%}
 .footer-acoes{border-top:1px solid var(--line);padding:9px 14px;flex:0 0 auto;background:#181b14}
 .kbd{display:inline-block;background:#0e0f0c;border:1px solid #34392c;border-radius:4px;padding:0 5px;
@@ -1050,6 +1054,12 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
       <button id="bmerge">Unir talhões</button>
     </div>
     <p class="hint" id="chint">No modo desenho: cada clique põe um ponto. Dois cliques (ou "Terminar estrada") fecham a estrada e já começam a próxima. Os pontos grudam nas estradas existentes quando você clica perto.</p>
+  </div>
+
+  <div class="sec" id="infoBloco" style="display:none">
+    <h2 id="infoTitulo">—</h2>
+    <p class="hint" id="infoSub" style="margin:-4px 0 8px"></p>
+    <div class="info-grid" id="infoNums"></div>
   </div>
 
   <div id="sideScroll">
@@ -1298,6 +1308,24 @@ function checaSobreposicao(ptsLatLon,fazRaw,codigoExcluir){
  }
  return avisos;
 }
+// ---------- bloco de area/perimetro (talhao selecionado, ou em desenho/edicao)
+const fmtInt=n=>Math.round(n).toLocaleString('pt-BR');
+function areaEPerimetro(anelLatLon){
+ const poligono=anelParaTurf(anelLatLon);
+ const linha=turf.lineString(poligono.geometry.coordinates[0]);
+ return {area:turf.area(poligono),perim:turf.length(linha,{units:'kilometers'})*1000};
+}
+function mostraInfo(titulo,subtitulo,areaM2,perimM){
+ document.getElementById('infoBloco').style.display='';
+ document.getElementById('infoTitulo').textContent=titulo;
+ document.getElementById('infoSub').textContent=subtitulo||'';
+ document.getElementById('infoNums').innerHTML=
+  '<div><div class="iv">'+(areaM2/10000).toFixed(2).replace('.',',')+'</div><div class="il">hectares</div></div>'+
+  '<div><div class="iv">'+fmtInt(areaM2)+'</div><div class="il">m²</div></div>'+
+  '<div><div class="iv">'+fmtInt(perimM)+'</div><div class="il">perímetro (m)</div></div>'+
+  '<div><div class="iv">'+(perimM/1000).toFixed(2).replace('.',',')+'</div><div class="il">perímetro (km)</div></div>';
+}
+function escondeInfo(){document.getElementById('infoBloco').style.display='none';}
 const bnds=[],SNAP=[];
 function addSnap(pts){pts.forEach(p=>SNAP.push(p));}
 const okLL=p=>Array.isArray(p)&&isFinite(p[0])&&isFinite(p[1])&&Math.abs(p[0])<=85&&Math.abs(p[1])<=180;
@@ -1392,7 +1420,12 @@ function draw(){const r=[...D.rotas].sort((a,b)=>(a[sk]>b[sk]?1:-1)*sd);
  document.getElementById('badgeTbl').textContent=r.length;
  document.querySelectorAll('#tbl th').forEach(t=>t.onclick=()=>{const k=t.dataset.k;if(k===sk)sd*=-1;else{sk=k;sd=k==='t'?1:-1;}draw();});
  document.querySelectorAll('#tbl tr[data-t]').forEach(t=>t.onclick=()=>select(t.dataset.t));}
-function select(n){selT=n;const r=D.rotas.find(x=>x.t===n);gR.clearLayers();if(!r)return;
+function select(n){selT=n;const r=D.rotas.find(x=>x.t===n);gR.clearLayers();
+ const f=D.talhoes.find(x=>x.n===n);
+ if(f){
+  try{const {area,perim}=areaEPerimetro(f.c);mostraInfo(f.label,f.faz,area,perim);}catch(e){escondeInfo();}
+ } else escondeInfo();
+ if(!r){draw();return;}
  L.polyline(r.p,{color:'#ff2d2d',weight:5,opacity:.95}).addTo(gR);
  L.circleMarker(r.p[r.p.length-1],{radius:6,color:'#fff',weight:2,fillColor:'#ff2d2d',fillOpacity:1}).addTo(gR)
   .bindTooltip((r.label||n)+' — '+fmt(r.max)+' km',{permanent:true,direction:'top',className:'rlbl'});
@@ -1488,6 +1521,7 @@ function setMode(m){
  if(mode==='dividir'&&m!=='dividir')cancelarDivisao();
  if(mode==='unir'&&m!=='unir')cancelarUniao();
  mode=m;
+ if(m&&m!=='talhao'&&m!=='editarContorno')escondeInfo();
  document.getElementById('bnew').classList.toggle('on',m==='draw');
  document.getElementById('bblock').classList.toggle('on',m==='block');
  document.getElementById('bedit').classList.toggle('on',m==='editar');
@@ -1545,7 +1579,10 @@ function tmpT(){gD.clearLayers();
  if(ptsT.length>2)L.polygon(ptsT,{color:'#b967ff',weight:3,dashArray:'8,5',fill:true,fillColor:'#b967ff',fillOpacity:.12}).addTo(gD);
  else if(ptsT.length>1)L.polyline(ptsT,{color:'#b967ff',weight:3,dashArray:'8,5'}).addTo(gD);
  ptsT.forEach(p=>L.circleMarker(p,{radius:4,color:'#fff',weight:2,fillColor:'#b967ff',fillOpacity:1}).addTo(gD));
- document.getElementById('bmsgT').textContent='Talhão novo — '+ptsT.length+' ponto(s)'+(ptsT.length<3?' (mínimo 3)':'');}
+ document.getElementById('bmsgT').textContent='Talhão novo — '+ptsT.length+' ponto(s)'+(ptsT.length<3?' (mínimo 3)':'');
+ if(ptsT.length>=3){
+  try{const {area,perim}=areaEPerimetro(ptsT);mostraInfo('Talhão novo (em desenho)','',area,perim);}catch(e){}
+ } else escondeInfo();}
 function endTalhao(){
  if(ptsT.length<3){alert('Precisa de pelo menos 3 pontos pra fechar o contorno.');return;}
  const fazSel=document.getElementById('tFaz');
@@ -1565,15 +1602,22 @@ document.getElementById('texit').onclick=()=>{ptsT=[];tmpT();setMode(null);};
 let editando=null; // {faz,fazRaw,codigo,layer}
 document.getElementById('beditc').onclick=()=>setMode(mode==='editarContorno'?null:'editarContorno');
 document.getElementById('eexit').onclick=()=>setMode(null);
+function atualizaInfoEdicao(){
+ if(!editando)return;
+ const anel=editando.layer.getLatLngs()[0].map(p=>[p.lat,p.lng]);
+ try{const {area,perim}=areaEPerimetro(anel);mostraInfo(editando.codigo+' (editando)',editando.faz,area,perim);}catch(e){}
+}
 function iniciaEdicaoContorno(f){
  if(editando)cancelarEdicaoContorno();
  const layer=L.polygon(f.c,{color:'#ffb400',weight:3,fillColor:'#ffb400',fillOpacity:.2}).addTo(gEditPrev);
  layer.pm.enable({allowSelfIntersection:false,snappable:true,snapDistance:20});
  editando={faz:f.faz,fazRaw:f.fazRaw,codigo:f.label,layer};
+ layer.on('pm:markerdragend pm:vertexadded pm:vertexremoved',atualizaInfoEdicao);
  if(f._poly)f._poly.setStyle({opacity:.15,fillOpacity:.02});
  document.getElementById('esalvar').style.display='';
  document.getElementById('bmsgE').textContent='Editando '+f.label+' — arraste os vértices (ou o meio de uma aresta pra criar um novo)';
  map.fitBounds(layer.getBounds(),{padding:[60,60]});
+ atualizaInfoEdicao();
 }
 function cancelarEdicaoContorno(){
  if(!editando)return;
@@ -1584,6 +1628,7 @@ function cancelarEdicaoContorno(){
  editando=null;
  document.getElementById('esalvar').style.display='none';
  document.getElementById('bmsgE').textContent='Editar contorno — clique num talhão existente';
+ escondeInfo();
 }
 document.getElementById('esalvar').onclick=()=>{
  if(!editando)return;
@@ -1643,7 +1688,9 @@ document.getElementById('send').onclick=()=>{
  document.getElementById('sCod1').style.display='';
  document.getElementById('sCod2').style.display='';
  document.getElementById('sconfirma').style.display='';
- document.getElementById('bmsgS').textContent='Digite o código de cada parte (destacadas em rosa e azul)';
+ const haRosa=(turf.area(anelParaTurf(partes[0]))/10000).toFixed(2).replace('.',',');
+ const haAzul=(turf.area(anelParaTurf(partes[1]))/10000).toFixed(2).replace('.',',');
+ document.getElementById('bmsgS').textContent='Código de cada parte — rosa: '+haRosa+' ha · azul: '+haAzul+' ha';
 };
 document.getElementById('sundo').onclick=()=>{divPts.pop();desenhaCorte();};
 document.getElementById('sconfirma').onclick=()=>{
@@ -1693,9 +1740,10 @@ function toggleSelecaoUniao(f){
 }
 function atualizaBarraUniao(){
  const n=uniaoSelecionados.length;
+ const somaHa=uniaoSelecionados.reduce((s,f)=>s+(f.a||0),0);
  document.getElementById('bmsgM').textContent = n===0
   ? 'Unir talhões — clique em 2 ou mais talhões vizinhos'
-  : n+' selecionado(s): '+uniaoSelecionados.map(x=>x.label).join(', ');
+  : n+' selecionado(s): '+uniaoSelecionados.map(x=>x.label).join(', ')+' · soma ≈ '+somaHa.toFixed(2).replace('.',',')+' ha';
  const mostraCod=n>=2;
  document.getElementById('mCod').style.display=mostraCod?'':'none';
  document.getElementById('mconfirma').style.display=mostraCod?'':'none';

@@ -945,10 +945,11 @@ label.ck{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}
 /* acordeao -- cada um e um bloco/cartao proprio, nao uma secao corrida */
 details.acc{border:1px solid var(--line);border-radius:10px;background:#181b14;
   overflow:hidden;flex:0 0 auto}
-details.acc>summary{list-style:none;cursor:pointer;padding:10px 14px;display:flex;align-items:center;
+details.acc>summary{list-style:none;cursor:pointer;padding:7px 12px;display:flex;align-items:center;
   justify-content:space-between;user-select:none}
+details.acc>summary h2{font-size:12px;margin:0;font-weight:600;line-height:1.3}
 details.acc>summary::-webkit-details-marker{display:none}
-details.acc>summary::after{content:'▸';color:var(--mut);font-size:11px;transition:transform .15s}
+details.acc>summary::after{content:'▸';color:var(--mut);font-size:10px;transition:transform .15s}
 details.acc[open]>summary::after{transform:rotate(90deg)}
 details.acc>summary:hover{background:#20241b}
 details.acc>.corpo{padding:0 14px 12px}
@@ -960,7 +961,7 @@ details.sub>summary::after{content:'▸';color:var(--mut);font-size:10px;transit
 details.sub[open]>summary::after{transform:rotate(90deg)}
 .badge-n{display:inline-block;min-width:18px;text-align:center;padding:1px 6px;border-radius:99px;
   font-size:10.5px;background:#2c3122;color:var(--mut);font-variant-numeric:tabular-nums}
-.modos-fixo{padding:10px 14px;border-top:1px solid var(--line);flex:0 0 auto}
+.modos-fixo{padding:8px 12px;border-top:1px solid var(--line);flex:0 0 auto}
 #infoBloco{position:absolute;left:10px;top:10px;z-index:900;background:rgba(18,20,14,.92);
   border:1px solid var(--line);border-radius:9px;padding:10px 13px;box-shadow:0 8px 26px #000a;
   max-width:220px}
@@ -969,8 +970,15 @@ details.sub[open]>summary::after{transform:rotate(90deg)}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
 .info-grid .iv{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc)}
 .info-grid .il{font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
-.modos-fixo .row button{flex:1 1 40%}
-.footer-acoes{border-top:1px solid var(--line);padding:9px 14px;flex:0 0 auto;background:#181b14}
+.modos-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+.modos-cols>div{display:flex;flex-direction:column;gap:4px}
+.modos-tit{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:0 0 1px 2px}
+.modos-fixo button{padding:5px 6px;font-size:11px;width:100%}
+.footer-acoes{border-top:1px solid var(--line);padding:7px 12px;flex:0 0 auto;background:#181b14}
+.row-acoes{flex-wrap:nowrap}
+.row-acoes button{flex:1;min-width:0;padding:5px 4px;font-size:10.5px;display:flex;
+  align-items:center;justify-content:center;gap:3px}
+.row-acoes .kbd{padding:0 3px;font-size:9px}
 .kbd{display:inline-block;background:#0e0f0c;border:1px solid #34392c;border-radius:4px;padding:0 5px;
   font:11px ui-monospace,monospace;color:var(--mut)}
 #ctxMenu{position:fixed;z-index:3000;background:#1b1e17;border:1px solid #2f342a;border-radius:8px;
@@ -1004,6 +1012,11 @@ tr:hover td{background:#262a1e}tr.sel td{background:#3c4226}
  background:#3a2a10;border:1px solid #7a5a1a;color:#ffdf9a;border-radius:9px;padding:11px 14px;font-size:12.5px;line-height:1.5;box-shadow:0 8px 26px #000a}
 #aviso b{display:block;margin-bottom:3px;color:#ffcf5c}
 #hud{position:absolute;right:10px;bottom:10px;z-index:900;background:rgba(18,20,14,.85);border-radius:6px;padding:4px 9px;font:11.5px ui-monospace,monospace;color:#cfd4bd}
+#satBar{position:absolute;right:10px;top:10px;z-index:900;display:flex;gap:3px;
+  background:rgba(18,20,14,.85);border-radius:6px;padding:4px}
+#satBar button{padding:1px 6px;font:11.5px ui-monospace,monospace;background:#272b21;
+  color:#cfd4bd;border:1px solid var(--line);border-radius:4px;cursor:pointer}
+#satBar button.on{background:var(--acc);color:#1a1a0d;border-color:var(--acc);font-weight:600}
 #camadasBar{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:900;
   display:flex;align-items:center;gap:8px 14px;background:rgba(18,20,14,.92);border:1px solid var(--line);
   border-radius:14px;padding:7px 16px;box-shadow:0 8px 26px #000a;flex-wrap:wrap;justify-content:center;
@@ -1069,6 +1082,14 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
  (baixe e abra direto no navegador), ou a rede da empresa bloqueia o servidor de imagens
  (tente outro provedor nos botões do painel).</div>
 <div id="hud"></div>
+<div id="satBar" title="Se uma imagem não carregar, tente outra base — são de datas diferentes">
+  <button class="on" data-b="google">G</button>
+  <button data-b="esri" title="Esri / Maxar">E</button>
+  <button data-b="esri2" title="Esri (alt.)">E2</button>
+  <button data-b="google2" title="Google (alt.)">G2</button>
+</div>
+<p class="hint" id="attrib" style="display:none">Imagem: Google</p>
+<p class="hint" id="tdiag" style="display:none">carregando…</p>
 <div id="camadasBar">
   <label class="ck-mini" title="Malha usada no cálculo (divisas)"><span class="sw" id="swM" style="border-color:#ffffff"></span><input type="checkbox" id="cM" checked><span class="lbl-mini">Malha de Estradas</span></label>
   <input type="color" id="corMalha" value="#ffffff" title="Cor da malha">
@@ -1086,20 +1107,26 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
   <h1><img src="logo.png" alt="" class="logo-mini">Bancada de Estradas — Ponte de Pedra + Galheiro + Java + Mato Grosso + Panamá + Promissão + Tucano<small>Desenhe as estradas que faltam. Pode desenhar várias seguidas, sem sair do modo. Clique com o botão direito no mapa pra atalhos.</small></h1>
 
   <div class="modos-fixo">
-    <div class="row">
-      <button id="bnew" class="go">Desenhar estradas</button>
-      <button id="bblock">Marcar divisa sem estrada</button>
-      <button id="bedit">Apagar estrada existente</button>
-      <button id="bplan">Planejar talhão novo</button>
-      <button id="beditc">Editar contorno de talhão</button>
-      <button id="bsplit">Dividir talhão</button>
-      <button id="bmerge">Unir talhões</button>
+    <div class="modos-cols">
+      <div>
+        <div class="modos-tit">Estradas</div>
+        <button id="bnew" class="go" title="Desenhar estradas">Desenhar</button>
+        <button id="bblock" title="Marcar divisa sem estrada">Marcar divisa</button>
+        <button id="bedit" title="Apagar estrada existente">Apagar</button>
+      </div>
+      <div>
+        <div class="modos-tit">Talhões</div>
+        <button id="bplan" title="Planejar talhão novo">Planejar novo</button>
+        <button id="beditc" title="Editar contorno de talhão">Editar contorno</button>
+        <button id="bsplit" title="Dividir talhão">Dividir</button>
+        <button id="bmerge" title="Unir talhões">Unir</button>
+      </div>
     </div>
     <p class="hint" id="chint">No modo desenho: cada clique põe um ponto. Dois cliques (ou "Terminar estrada") fecham a estrada e já começam a próxima. Os pontos grudam nas estradas existentes quando você clica perto.</p>
   </div>
 
   <div id="sideScroll">
-    <details class="acc" id="accCor" open>
+    <details class="acc" id="accCor">
       <summary><h2>Minhas correções <span class="badge-n" id="badgeCor">0</span></h2></summary>
       <div class="corpo">
         <details class="sub" id="subLst">
@@ -1121,22 +1148,7 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
       </div>
     </details>
 
-    <details class="acc" id="accImg">
-      <summary><h2>Imagem de satélite</h2></summary>
-      <div class="corpo">
-        <div class="row" id="bases">
-          <button class="sm on" data-b="google">Google</button>
-          <button class="sm" data-b="esri">Esri / Maxar</button>
-          <button class="sm" data-b="esri2">Esri (alt.)</button>
-          <button class="sm" data-b="google2">Google (alt.)</button>
-        </div>
-        <p class="hint">As duas bases são de datas diferentes. Se um carreador não aparece numa, tente a outra — muitas vezes uma delas é mais nova.</p>
-        <p class="hint" id="attrib">Imagem: Google</p>
-        <p class="hint" id="tdiag">carregando…</p>
-      </div>
-    </details>
-
-    <details class="acc" id="accNav" open>
+    <details class="acc" id="accNav">
       <summary><h2>Navegar</h2></summary>
       <div class="corpo">
         <div class="row" id="sedeBtns"></div>
@@ -1160,11 +1172,11 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
   </div>
 
   <div class="footer-acoes">
-    <div class="row">
-      <button id="bcopy" class="on">Copiar correções</button>
-      <button id="bdl">Baixar .json <span class="kbd">Ctrl+S</span></button>
-      <button id="bundoBtn">↶ Desfazer <span class="kbd">Ctrl+Z</span></button>
-      <button id="bclr">Limpar tudo</button>
+    <div class="row row-acoes">
+      <button id="bcopy" class="on" title="Copiar correções">Copiar</button>
+      <button id="bdl" title="Baixar .json (Ctrl+S)">Baixar<span class="kbd">^S</span></button>
+      <button id="bundoBtn" title="Desfazer (Ctrl+Z)">↶<span class="kbd">^Z</span></button>
+      <button id="bclr" title="Limpar tudo">Limpar</button>
     </div>
     <p class="hint" id="cstat">Nenhuma correção ainda.</p>
   </div>
@@ -1285,7 +1297,7 @@ let baseAtual='google';BASES.google.addTo(map);
 function setBase(k,auto){if(k===baseAtual&&!auto)return;
  if(BASES[baseAtual])map.removeLayer(BASES[baseAtual]);
  BASES[k].addTo(map);BASES[k].bringToBack();baseAtual=k;
- document.querySelectorAll('#bases button').forEach(b=>b.classList.toggle('on',b.dataset.b===k));
+ document.querySelectorAll('#satBar button').forEach(b=>b.classList.toggle('on',b.dataset.b===k));
  const pv=PROV.find(p=>p.k===k);
  document.getElementById('attrib').textContent='Imagem: '+pv.nome;
  diag();}
@@ -1866,11 +1878,11 @@ document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'){ptsT=[];tmpT();setMode(null);}
   if(ev.key==='Backspace'){ev.preventDefault();ptsT.pop();tmpT();}
  }});
-// ---------- acordeao: lembra aberto/fechado entre visitas
-document.querySelectorAll('details.acc[id]').forEach(d=>{
- try{const s=localStorage.getItem('acc_'+d.id);if(s!==null)d.open=s==='1';}catch(e){}
- d.addEventListener('toggle',()=>{try{localStorage.setItem('acc_'+d.id,d.open?'1':'0');}catch(e){}});
-});
+// ---------- acordeao: sempre comeca recolhido (nao lembra entre visitas --
+// pedido explicito, pra sidebar nunca abrir "cheia" sozinha depois de um reload)
+try{
+ Object.keys(localStorage).filter(k=>k.startsWith('acc_')).forEach(k=>localStorage.removeItem(k));
+}catch(e){}
 // ---------- menu de clique direito
 function fecharMenu(){const m=document.getElementById('ctxMenu');if(m)m.remove();}
 function menuContexto(clientX,clientY,itens){
@@ -1933,6 +1945,6 @@ document.getElementById('bdl').onclick=()=>{const b=new Blob([JSON.stringify(COR
  perguntaLimpar();};
 document.getElementById('bclr').onclick=()=>{if(!confirm('Apagar todas as suas correções?'))return;
  COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[]};save();location.reload();};
-document.querySelectorAll('#bases button').forEach(b=>b.onclick=()=>setBase(b.dataset.b));
+document.querySelectorAll('#satBar button').forEach(b=>b.onclick=()=>setBase(b.dataset.b));
 renderU();renderRem();
 </script></body></html>

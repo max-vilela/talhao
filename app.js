@@ -324,7 +324,6 @@ document.getElementById('painelFazendas').innerHTML = ORDEM.map(faz => {
     <summary><span class="pt" style="background:${CORES[faz]}"></span> ${d.nome} <span class="seta">▶</span></summary>
     <div class="itens">
       <a class="item" href="${d.slug}.html">Consultar tabela</a>
-      <a class="item" href="BANCADA_UNIFICADA.html">Bancada de estradas (todas as fazendas)</a>
       <a class="item" href="${d.slug}_distancias.xlsx" download>Planilha .xlsx</a>
       <a class="item" href="${d.slug}_rotas.kml" download>KML das rotas</a>
     </div>

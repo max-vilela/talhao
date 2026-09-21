@@ -43,7 +43,7 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
 .navitem{position:relative}
 .navbt{font:inherit;font-size:13px;font-weight:600;color:var(--tx);background:none;border:0;
   border-radius:var(--raio-sm);padding:7px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;
-  transition:background-color .15s var(--easing),color .15s var(--easing)}
+  text-decoration:none;transition:background-color .15s var(--easing),color .15s var(--easing)}
 .navbt:hover{background:var(--acc-fraco);color:var(--acc-forte)}
 .navbt .seta{font-size:9px;transition:transform .15s var(--easing)}
 .navbt[aria-expanded="true"]{background:var(--acc-fraco);color:var(--acc-forte)}
@@ -238,10 +238,13 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
 }
 /* telas bem estreitas (celular): o título some, o nav encolhe mais --
    sem isso, "Pendências" ficava cortado fora da tela, sem como clicar */
+.navbt-short{display:none}
 @media(max-width:480px){
   header.topo{padding:8px 8px;gap:4px}
   header.topo h1{display:none}
   .navtop{gap:0}
-  .navbt{padding:6px 6px;font-size:11px;gap:2px}
+  .navbt{padding:5px 4px;font-size:10.5px;gap:2px}
   .navbt .seta{display:none}
+  .navbt-full{display:none}
+  .navbt-short{display:inline}
 }

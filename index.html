@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="leaflet.css">
-<link rel="stylesheet" href="mapa.css?v=20260921b">
+<link rel="stylesheet" href="mapa.css?v=20260921c">
 </head><body>
 <div id="shell">
 
@@ -49,6 +49,9 @@
     <main id="mapwrap">
       <div id="alertas"><div class="marquee-track" id="marqueeTrack"></div></div>
       <div id="mapa"></div>
+      <div id="malhaBar">
+        <label><input type="checkbox" id="ckRede"><span>Malha de estradas</span></label>
+      </div>
       <div id="ficha">
         <button class="fechar" aria-label="Fechar">×</button>
         <h3 id="ft"></h3>
@@ -88,5 +91,5 @@
 
 <script src="leaflet.js"></script>
 <script src="dados_mapa.js?v=20260917f"></script>
-<script src="app.js?v=20260921a"></script>
+<script src="app.js?v=20260921b"></script>
 </body></html>

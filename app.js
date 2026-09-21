@@ -2,6 +2,7 @@ const CORES = {
   GALHEIRO: '#c2703d', JAVA: '#3d6bc2', MATO_GROSSO: '#8a3dc2',
   PANAMA: '#3dc2ad', PPEDRA: '#d13438', PROMISSAO: '#c2c23d', TUCANO: '#c23d70',
 };
+const COR_REDE = '#ffffff'; // cor única da malha de estradas, sempre diferente da cor de cada fazenda
 const ORDEM = ['PPEDRA', 'GALHEIRO', 'JAVA', 'MATO_GROSSO', 'PANAMA', 'PROMISSAO', 'TUCANO'];
 const fmt = m => m == null ? '—' : (m / 1000).toFixed(2).replace('.', ',');
 if (typeof ATUALIZADO !== 'undefined') {
@@ -82,7 +83,7 @@ for (const faz of ORDEM) {
   }
 
   for (const r of d.rotas) {
-    if (r.p && r.p.length) L.polyline(r.p, { color: cor, weight: 2, opacity: .55 }).addTo(grupo.rede);
+    if (r.p && r.p.length) L.polyline(r.p, { color: COR_REDE, weight: 2.5, opacity: .9 }).addTo(grupo.rede);
   }
 
   grupo.sede = L.circleMarker(d.sede, { radius: 7, color: '#fff', weight: 2, fillColor: '#d92b2b', fillOpacity: 1 })
@@ -205,7 +206,6 @@ map.on('contextmenu', e => {
 const lista = document.getElementById('lista');
 lista.innerHTML = ORDEM.map(faz => {
   const d = FAZENDAS[faz];
-  const badge = d.situacao === 'ok' ? '' : d.situacao === 'parcial' ? ' al' : ' al';
   const cods = Object.keys(d.talhoes).sort();
   return `<details class="fazenda" data-faz="${faz}">
     <summary>
@@ -214,8 +214,6 @@ lista.innerHTML = ORDEM.map(faz => {
       <span class="n">${cods.length}</span>
       <span class="seta">▶</span>
     </summary>
-    <p class="sub"><span class="badge${badge}">${d.situacao_label}</span></p>
-    <label class="estradas"><input type="checkbox" data-rede="${faz}"> mostrar malha de estradas</label>
     <div class="talhoes">${cods.map(c => `<button data-faz="${faz}" data-cod="${c}">${c}</button>`).join('')}</div>
   </details>`;
 }).join('');
@@ -225,10 +223,13 @@ lista.querySelectorAll('summary').forEach(s => s.addEventListener('click', () =>
   const faz = s.closest('details').dataset.faz;
   setTimeout(() => { if (s.closest('details').open) voaPara(faz); }, 0);
 }));
-lista.querySelectorAll('input[data-rede]').forEach(chk => chk.onchange = () => {
-  const faz = chk.dataset.rede;
-  if (chk.checked) camadas[faz].rede.addTo(map); else map.removeLayer(camadas[faz].rede);
-});
+
+// --- barra flutuante do mapa: malha de estradas (universal, todas as fazendas) ---
+document.getElementById('ckRede').onchange = e => {
+  for (const faz of ORDEM) {
+    if (e.target.checked) camadas[faz].rede.addTo(map); else map.removeLayer(camadas[faz].rede);
+  }
+};
 
 function voaPara(faz) {
   const d = FAZENDAS[faz];

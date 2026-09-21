@@ -17,10 +17,6 @@ body{margin:0;background:var(--bg);color:var(--tx);overflow:hidden;
   font:15px/1.55 "Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:var(--acc)}
-.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;
-  letter-spacing:.03em;background:var(--acc-fraco);color:var(--acc-forte);white-space:nowrap}
-.badge.al{background:var(--alerta-fraco);color:var(--alerta)}
-.badge.pa{background:var(--parado-fraco);color:var(--parado)}
 
 #shell{display:flex;flex-direction:column;height:100%}
 
@@ -163,9 +159,7 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
 .fazenda summary .n{color:var(--mut);font-size:11.5px;font-variant-numeric:tabular-nums}
 .fazenda[open] summary .seta{transform:rotate(90deg)}
 .fazenda summary .seta{font-size:10px;color:var(--mut);transition:transform .15s var(--easing)}
-.fazenda .sub{padding:0 14px 6px 32px;color:var(--mut);font-size:11.5px;margin:-4px 0 4px}
-.fazenda .estradas{display:flex;align-items:center;gap:6px;padding:0 14px 9px 32px;font-size:12px;color:var(--mut)}
-.talhoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;padding:0 14px 12px 32px}
+.talhoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;padding:6px 14px 12px 32px}
 .talhoes button{font:inherit;font-size:12px;padding:6px 4px;border:1px solid var(--linha);
   border-radius:var(--raio-sm);background:#fff;cursor:pointer;color:var(--tx);
   transition:background-color .15s var(--easing),border-color .15s var(--easing),color .15s var(--easing)}
@@ -191,6 +185,14 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
 .marquee-track span b{color:var(--alerta)}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 @media(prefers-reduced-motion:reduce){.marquee-track{animation:none;padding-left:12px}}
+
+/* barra flutuante minimalista no rodapé do mapa: malha de estradas (todas as fazendas) */
+#malhaBar{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:900;
+  background:var(--card);border:1px solid var(--linha);border-radius:99px;
+  padding:6px 14px;box-shadow:var(--sombra-lg)}
+#malhaBar label{display:flex;align-items:center;gap:6px;cursor:pointer;
+  font-size:12px;color:var(--tx);white-space:nowrap;user-select:none}
+#malhaBar input[type=checkbox]{margin:0;width:13px;height:13px;accent-color:var(--acc);cursor:pointer}
 .rotulo-talhao{background:none;border:0;box-shadow:none;padding:0;pointer-events:none;
   color:#fff;font-size:11px;font-weight:600;text-shadow:0 1px 2px #000,0 0 4px #000}
 .rotulo-talhao::before{display:none}

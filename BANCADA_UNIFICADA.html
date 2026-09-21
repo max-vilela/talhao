@@ -1657,6 +1657,10 @@ function endTalhao(){
  if(!fazSel.value){alert('Escolha a fazenda.');return;}
  const cod=document.getElementById('tCod').value.trim().toUpperCase();
  if(!cod){alert('Digite um código pro talhão (ex.: G-99).');return;}
+ if((COR.talhoes_novos||[]).some(t=>t.faz===fazSel.value&&t.codigo===cod)){
+  alert('Você já planejou um talhão '+cod+' nesta sessão. Escolha outro código, ou apague o anterior antes de criar de novo.');return;}
+ const avisos=checaSobreposicao(ptsT,fazSel.value,cod);
+ if(avisos.length&&!confirm('Esse contorno sobrepõe: '+avisos.join(', ')+'. Salvar mesmo assim?'))return;
  snapshot();
  COR.talhoes_novos=COR.talhoes_novos||[];
  COR.talhoes_novos.push({faz:fazSel.value, fazNome:fazSel.options[fazSel.selectedIndex].text, codigo:cod, pts:ptsT.slice(), obs:''});

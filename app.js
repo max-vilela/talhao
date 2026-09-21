@@ -183,6 +183,15 @@ function seleciona(faz, cod, { zoom = false } = {}) {
 }
 
 document.querySelector('#ficha .fechar').onclick = desseleciona;
+function navegaTalhao(delta) {
+  if (!selecionado) return;
+  const cods = Object.keys(FAZENDAS[selecionado.faz].talhoes).sort();
+  const i = cods.indexOf(selecionado.cod);
+  const novo = cods[(i + delta + cods.length) % cods.length];
+  seleciona(selecionado.faz, novo, { zoom: true });
+}
+document.getElementById('ftPrev').onclick = () => navegaTalhao(-1);
+document.getElementById('ftNext').onclick = () => navegaTalhao(1);
 map.on('click', e => { if (simulando) { adicionaPontoSim(e.latlng); return; } desseleciona(); });
 map.on('contextmenu', e => {
   L.DomEvent.preventDefault(e.originalEvent);
@@ -245,9 +254,16 @@ function voaPara(faz) {
 // --- busca ---
 const busca = document.getElementById('busca');
 const resultados = document.getElementById('resultados');
+function abreFazenda(faz) {
+  const det = lista.querySelector(`details[data-faz="${faz}"]`);
+  if (det) { det.open = true; det.scrollIntoView({ block: 'nearest' }); }
+  voaPara(faz);
+}
+
 busca.oninput = () => {
   const q = busca.value.trim().toLowerCase();
   if (!q) { resultados.innerHTML = ''; return; }
+  const fazendasAchadas = ORDEM.filter(faz => FAZENDAS[faz].nome.toLowerCase().includes(q));
   const achados = [];
   for (const faz of ORDEM) {
     for (const cod of Object.keys(FAZENDAS[faz].talhoes)) {
@@ -255,10 +271,16 @@ busca.oninput = () => {
       if (achados.length >= 30) break;
     }
   }
-  resultados.innerHTML = achados.map(a => `<button class="res" data-faz="${a.faz}" data-cod="${a.cod}">
-    <b>${a.cod}</b><span>${FAZENDAS[a.faz].nome}</span></button>`).join('')
-    || '<p class="vazio">Nada encontrado.</p>';
-  resultados.querySelectorAll('.res').forEach(b => b.onclick = () => {
+  const htmlFazendas = fazendasAchadas.map(faz => `<button class="res res-faz" data-faz="${faz}">
+    <b>${FAZENDAS[faz].nome}</b><span>${Object.keys(FAZENDAS[faz].talhoes).length} talhões — ver todos</span></button>`).join('');
+  const htmlTalhoes = achados.map(a => `<button class="res" data-faz="${a.faz}" data-cod="${a.cod}">
+    <b>${a.cod}</b><span>${FAZENDAS[a.faz].nome}</span></button>`).join('');
+  resultados.innerHTML = htmlFazendas + htmlTalhoes || '<p class="vazio">Nada encontrado.</p>';
+  resultados.querySelectorAll('.res-faz').forEach(b => b.onclick = () => {
+    abreFazenda(b.dataset.faz);
+    busca.value = ''; resultados.innerHTML = '';
+  });
+  resultados.querySelectorAll('.res:not(.res-faz)').forEach(b => b.onclick = () => {
     seleciona(b.dataset.faz, b.dataset.cod, { zoom: true });
     busca.value = ''; resultados.innerHTML = '';
   });

@@ -206,11 +206,16 @@ header.topo h1 .sep{width:3px;height:3px;border-radius:50%;background:var(--mut-
   box-shadow:var(--sombra-lg);padding:15px 17px;width:264px;max-width:calc(100vw - 340px)}
 #ficha.on{display:block;animation:cai .16s var(--easing)}
 @media(prefers-reduced-motion:reduce){#ficha.on{animation:none}}
-#ficha .fechar{position:absolute;top:9px;right:11px;border:0;background:none;font-size:17px;
+#ficha .ftTools{position:absolute;top:9px;right:11px;display:flex;align-items:center;gap:3px}
+#ficha .fechar{border:0;background:none;font-size:17px;
   cursor:pointer;color:var(--mut);line-height:1;border-radius:var(--raio-sm);padding:2px 5px;
   transition:background-color .15s var(--easing),color .15s var(--easing)}
 #ficha .fechar:hover{color:var(--tx);background:var(--linha)}
-#ficha h3{margin:0 0 2px;font-size:15.5px;padding-right:16px;letter-spacing:-.01em}
+#ficha .ftSeta{border:1px solid var(--linha);background:#fff;color:var(--mut);
+  border-radius:var(--raio-sm);font-size:13px;line-height:1;padding:2px 6px;cursor:pointer;
+  transition:background-color .15s var(--easing),border-color .15s var(--easing),color .15s var(--easing)}
+#ficha .ftSeta:hover{background:var(--acc-fraco);border-color:var(--acc-media);color:var(--acc-forte)}
+#ficha h3{margin:0 0 2px;font-size:15.5px;padding-right:72px;letter-spacing:-.01em}
 #ficha .faz{margin:0 0 10px;color:var(--mut);font-size:12px}
 #ficha .nums{display:flex;flex-wrap:wrap;gap:13px 18px;margin:0}
 #ficha .num b{display:block;font-size:16.5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}

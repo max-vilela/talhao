@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="leaflet.css">
-<link rel="stylesheet" href="mapa.css?v=20260921c">
+<link rel="stylesheet" href="mapa.css?v=20260921d">
 </head><body>
 <div id="shell">
 
@@ -53,7 +53,11 @@
         <label><input type="checkbox" id="ckRede"><span>Malha de estradas</span></label>
       </div>
       <div id="ficha">
-        <button class="fechar" aria-label="Fechar">×</button>
+        <div class="ftTools">
+          <button class="ftSeta" id="ftPrev" aria-label="Talhão anterior" title="Talhão anterior">‹</button>
+          <button class="ftSeta" id="ftNext" aria-label="Próximo talhão" title="Próximo talhão">›</button>
+          <button class="fechar" aria-label="Fechar">×</button>
+        </div>
         <h3 id="ft"></h3>
         <p class="faz" id="ff"></p>
         <div class="nums" id="fn"></div>
@@ -91,5 +95,5 @@
 
 <script src="leaflet.js"></script>
 <script src="dados_mapa.js?v=20260921a"></script>
-<script src="app.js?v=20260921b"></script>
+<script src="app.js?v=20260921c"></script>
 </body></html>

@@ -1175,8 +1175,10 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
     <div class="row row-acoes">
       <button id="bcopy" class="on" title="Copiar correções">Copiar</button>
       <button id="bdl" title="Baixar .json (Ctrl+S)">Baixar<span class="kbd">^S</span></button>
+      <button id="bimport" title="Carregar um .json de correções exportado antes">Importar</button>
       <button id="bundoBtn" title="Desfazer (Ctrl+Z)">↶<span class="kbd">^Z</span></button>
       <button id="bclr" title="Limpar tudo">Limpar</button>
+      <input type="file" id="fimport" accept="application/json,.json" hidden>
     </div>
     <p class="hint" id="cstat">Nenhuma correção ainda.</p>
   </div>
@@ -1943,6 +1945,20 @@ document.getElementById('bcopy').onclick=async()=>{const t=JSON.stringify(COR);
 document.getElementById('bdl').onclick=()=>{const b=new Blob([JSON.stringify(COR,null,1)],{type:'application/json'});
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='correcoes_estradas_unificada.json';a.click();
  perguntaLimpar();};
+document.getElementById('bimport').onclick=()=>document.getElementById('fimport').click();
+document.getElementById('fimport').onchange=async e=>{
+ const f=e.target.files[0];e.target.value='';if(!f)return;
+ let novo;
+ try{novo=JSON.parse(await f.text());}catch(err){alert('Arquivo inválido — não parece um .json de correções.');return;}
+ if(typeof novo!=='object'||novo===null||Array.isArray(novo)
+    ||!['estradas','divisas_sem_estrada','remover','talhoes_novos','divisoes'].some(k=>k in novo)){
+  alert('Arquivo inválido — não parece um .json de correções desta bancada.');return;}
+ const temAtual=COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length
+   ||(COR.talhoes_novos||[]).length||(COR.divisoes||[]).length;
+ if(temAtual&&!confirm('Isso substitui todas as correções atuais (de todas as fazendas) pelas do arquivo. Continuar?'))return;
+ COR={estradas:novo.estradas||[],divisas_sem_estrada:novo.divisas_sem_estrada||[],remover:novo.remover||[],
+      talhoes_novos:novo.talhoes_novos||[],divisoes:novo.divisoes||[]};
+ save();location.reload();};
 document.getElementById('bclr').onclick=()=>{if(!confirm('Apagar todas as suas correções?'))return;
  COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[]};save();location.reload();};
 document.querySelectorAll('#satBar button').forEach(b=>b.onclick=()=>setBase(b.dataset.b));

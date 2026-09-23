@@ -1548,7 +1548,10 @@ const bar=document.getElementById('bar'),barT=document.getElementById('barT'),
 function save(){try{localStorage.setItem('cor_unificada',JSON.stringify(COR));}catch(e){}}
 function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const plU=L.polyline(e.pts,{color:'#38d39f',weight:4}).addTo(gU).bindTooltip('sua estrada '+(i+1),{sticky:true});
-  plU.on('click',ev=>{if(mode==='editarRota'){L.DomEvent.stop(ev);iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}});
+  plU.on('click',ev=>{
+   if(mode==='editar'){L.DomEvent.stop(ev);snapshot();COR.estradas.splice(i,1);save();renderU();stat();}
+   else if(mode==='editarRota'){L.DomEvent.stop(ev);iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}
+  });
   plU.on('contextmenu',ev=>{L.DomEvent.preventDefault(ev.originalEvent);L.DomEvent.stopPropagation(ev);
    menuContexto(ev.originalEvent.clientX,ev.originalEvent.clientY,[
     {label:'✎ Editar pontos desta estrada',acao:()=>{setMode('editarRota');iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}},
@@ -1664,7 +1667,7 @@ function setMode(m){
  document.getElementById('chint').textContent = m==='block'
   ? 'Clique em cima de um trecho amarelo que NÃO é estrada de verdade.'
   : m==='editar'
-  ? 'Clique numa estrada laranja (já desenhada) para marcar pra apagar. Clique de novo pra desfazer.'
+  ? 'Clique numa estrada laranja (já cadastrada) pra marcar pra apagar — clique de novo pra desfazer. Numa estrada verde (sua, ainda não enviada), o clique já apaga direto.'
   : m==='editarRota'
   ? 'Clique numa estrada (laranja ou verde) pra editar os pontos dela — arraste os vértices, ou arraste o meio de um trecho pra criar um vértice novo.'
   : m==='talhao'

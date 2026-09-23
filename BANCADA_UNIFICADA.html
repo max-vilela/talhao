@@ -938,6 +938,7 @@ button:hover{background:#343a28}
 button.on{background:var(--acc);color:#1a1a0d;border-color:var(--acc);font-weight:600}
 button.go{background:var(--dr);color:#062;border-color:var(--dr);font-weight:600}
 button.sm{padding:3px 7px;font-size:11px}
+button.sm.editada{border-color:#ffb400;color:#ffb400}
 .row{display:flex;gap:6px;flex-wrap:wrap}
 label.ck{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}
 .sw{width:22px;height:0;border-top-width:3px;border-top-style:solid;flex:none}
@@ -999,11 +1000,12 @@ tr:hover td{background:#262a1e}tr.sel td{background:#3c4226}
 .hint.sub .sw{width:16px}
 .badge{display:inline-block;padding:1px 6px;border-radius:99px;font-size:10.5px;background:#2c3122;color:var(--mut)}
 .badge.w{background:#4a3a12;color:#ffcf5c}
-#bar,#barT,#barE,#barS,#barM{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:900;background:rgba(18,20,14,.96);border:1px solid var(--dr);border-radius:9px;padding:9px 13px;display:none;gap:9px;align-items:center;box-shadow:0 8px 26px #000a;flex-wrap:wrap;max-width:calc(100vw - 40px)}
-#bar.show,#barT.show,#barE.show,#barS.show,#barM.show{display:flex}
-#bar b,#barT b,#barE b,#barS b,#barM b{color:var(--dr)}
+#bar,#barT,#barE,#barR,#barS,#barM{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:900;background:rgba(18,20,14,.96);border:1px solid var(--dr);border-radius:9px;padding:9px 13px;display:none;gap:9px;align-items:center;box-shadow:0 8px 26px #000a;flex-wrap:wrap;max-width:calc(100vw - 40px)}
+#bar.show,#barT.show,#barE.show,#barR.show,#barS.show,#barM.show{display:flex}
+#bar b,#barT b,#barE b,#barR b,#barS b,#barM b{color:var(--dr)}
 #barT{border-color:#b967ff}#barT b{color:#b967ff}
 #barE{border-color:#ffb400}#barE b{color:#ffb400}
+#barR{border-color:#ffb400}#barR b{color:#ffb400}
 #barS{border-color:#ff5470}#barS b{color:#ff5470}
 #barM{border-color:#4fc3f7}#barM b{color:#4fc3f7}
 #barT select,#barT input[type=text],#barS input[type=text],#barM input[type=text]{
@@ -1055,6 +1057,11 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
   <b id="bmsgE">Editar contorno — clique num talhão existente</b>
   <button id="esalvar" class="go" style="display:none">Salvar contorno editado</button>
   <button id="eexit" class="sm">Sair do modo</button>
+</div>
+<div id="barR">
+  <b id="bmsgR">Editar rota — clique numa estrada (laranja ou verde) pra editar</b>
+  <button id="rsalvar" class="go" style="display:none">Salvar rota editada</button>
+  <button id="rexit" class="sm">Sair do modo</button>
 </div>
 <div id="barS">
   <b id="bmsgS">Dividir talhão — clique no talhão que vai dividir</b>
@@ -1113,6 +1120,7 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
         <button id="bnew" class="go" title="Desenhar estradas">Desenhar</button>
         <button id="bblock" title="Marcar divisa sem estrada">Marcar divisa</button>
         <button id="bedit" title="Apagar estrada existente">Apagar</button>
+        <button id="beditrota" title="Editar pontos de uma estrada existente">Editar rota</button>
       </div>
       <div>
         <div class="modos-tit">Talhões</div>
@@ -1136,6 +1144,10 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
         <details class="sub" id="subRem">
           <summary><span><span class="sw" style="border-color:#ff3b3b"></span> Marcadas pra apagar</span><span class="badge-n" id="badgeRem">0</span></summary>
           <ul class="lst" id="lstRem"></ul>
+        </details>
+        <details class="sub" id="subEdit">
+          <summary><span><span class="sw" style="border-color:#ffb400"></span> Estradas editadas</span><span class="badge-n" id="badgeEdit">0</span></summary>
+          <ul class="lst" id="lstEdit"></ul>
         </details>
         <details class="sub" id="subPlan">
           <summary><span><span class="sw" style="border-color:#b967ff"></span> Talhões planejados</span><span class="badge-n" id="badgePlan">0</span></summary>
@@ -1410,11 +1422,15 @@ const tracadaLayers=[];
 D.tracadas.forEach((t,i)=>{const pl=L.polyline(t.pts,{color:'#ff8a00',weight:4,opacity:1}).addTo(gE)
   .bindTooltip(t.nome,{sticky:true});addSnap(t.pts);
   tracadaLayers.push({nome:t.nome,pl});
-  pl.on('click',e=>{if(mode==='editar'){L.DomEvent.stop(e);toggleRemover(t.nome,pl);}});
+  pl.on('click',e=>{
+   if(mode==='editar'){L.DomEvent.stop(e);toggleRemover(t.nome,pl);}
+   else if(mode==='editarRota'){L.DomEvent.stop(e);iniciaEdicaoRota({tipo:'tracada',nome:t.nome,pl});}
+  });
   pl.on('contextmenu',e=>{L.DomEvent.preventDefault(e.originalEvent);L.DomEvent.stopPropagation(e);
    const marcada=COR.remover.includes(t.nome);
    menuContexto(e.originalEvent.clientX,e.originalEvent.clientY,[
     {label:marcada?'↶ Desfazer marcação de apagar':'✕ Marcar pra apagar',acao:()=>toggleRemover(t.nome,pl)},
+    {label:'✎ Editar pontos desta estrada',acao:()=>{setMode('editarRota');iniciaEdicaoRota({tipo:'tracada',nome:t.nome,pl});}},
     {label:'Ver/zoom',acao:()=>map.fitBounds(pl.getBounds(),{padding:[60,60]})},
    ]);});
 });
@@ -1428,6 +1444,7 @@ function fazendaBonita(chave){
  return chave.split(' / ').map(p=>NOMES_BONITOS[p.trim()]||titulo(p)).join(' + ');
 }
 function titulo(s){return s.trim().toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());}
+const gotosInfo=[]; // {nome,btn,det} -- pra poder sumir da lista quando marcada pra apagar
 if(D.tracadas.length){
  const porFazenda=new Map();
  D.tracadas.forEach((t,i)=>{
@@ -1439,19 +1456,39 @@ if(D.tracadas.length){
  [...porFazenda.keys()].sort().forEach(faz=>{
   const lista=porFazenda.get(faz);
   const det=document.createElement('details');det.className='sub';
-  det.innerHTML='<summary><span>'+fazendaBonita(faz)+'</span><span class="badge-n">'+lista.length+'</span></summary>';
+  det.innerHTML='<summary><span>'+fazendaBonita(faz)+'</span><span class="badge-n"></span></summary>';
   const row=document.createElement('div');row.className='row';row.style.marginTop='4px';
   lista.forEach(t=>{
    const numero=t.nome.split(' - ')[0];
    const b=document.createElement('button');b.className='sm';b.textContent=titulo(numero);
    b.onclick=()=>map.fitBounds(L.polyline(t.pts).getBounds(),{padding:[60,60]});
+   gotosInfo.push({nome:t.nome,btn:b,det});
    row.appendChild(b);
   });
   det.appendChild(row);
   gotos.appendChild(det);
  });
- document.getElementById('badgeGotos').textContent=D.tracadas.length;
  document.getElementById('subGotos').style.display='';
+}
+function atualizaGotos(){
+ let visiveis=0;
+ const porGrupo=new Map();
+ gotosInfo.forEach(({nome,btn,det})=>{
+  const marcada=COR.remover.includes(nome);
+  const editada=(COR.estradas_editadas||[]).some(x=>x.nome===nome);
+  btn.style.display=marcada?'none':'';
+  btn.title=editada?'edição pendente de envio':'';
+  btn.classList.toggle('editada',editada&&!marcada);
+  if(!marcada){visiveis++;porGrupo.set(det,(porGrupo.get(det)||0)+1);}
+ });
+ const vistos=new Set();
+ gotosInfo.forEach(({det})=>{
+  if(vistos.has(det))return;vistos.add(det);
+  const n=porGrupo.get(det)||0;
+  det.querySelector('.badge-n').textContent=n;
+  det.style.display=n?'':'none';
+ });
+ document.getElementById('badgeGotos').textContent=visiveis;
 }
 D.sedes.forEach(s=>{
   L.circleMarker(s.ll,{radius:9,color:'#fff',weight:3,fillColor:s.cor||'#ff2d2d',fillOpacity:1}).addTo(gT)
@@ -1502,16 +1539,19 @@ draw();
 const LY={cT:gT,cL:gL,cM:gM,cE:gE,cU:gU,cR:gR,cX:gX,cP:gPlan};
 Object.keys(LY).forEach(id=>document.getElementById(id).onchange=e=>e.target.checked?map.addLayer(LY[id]):map.removeLayer(LY[id]));
 // ---------- correcoes
-let COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[]};
-try{const s=localStorage.getItem('cor_unificada');if(s){COR=JSON.parse(s);COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];COR.divisoes=COR.divisoes||[];}}catch(e){}
+let COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[],estradas_editadas:[]};
+try{const s=localStorage.getItem('cor_unificada');if(s){COR=JSON.parse(s);COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];COR.divisoes=COR.divisoes||[];COR.estradas_editadas=COR.estradas_editadas||[];}}catch(e){}
 let mode=null,pts=[],nDraw=0,ptsT=[];
 const bar=document.getElementById('bar'),barT=document.getElementById('barT'),
-      barE=document.getElementById('barE'),barS=document.getElementById('barS'),barM=document.getElementById('barM');
+      barE=document.getElementById('barE'),barR=document.getElementById('barR'),
+      barS=document.getElementById('barS'),barM=document.getElementById('barM');
 function save(){try{localStorage.setItem('cor_unificada',JSON.stringify(COR));}catch(e){}}
 function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const plU=L.polyline(e.pts,{color:'#38d39f',weight:4}).addTo(gU).bindTooltip('sua estrada '+(i+1),{sticky:true});
+  plU.on('click',ev=>{if(mode==='editarRota'){L.DomEvent.stop(ev);iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}});
   plU.on('contextmenu',ev=>{L.DomEvent.preventDefault(ev.originalEvent);L.DomEvent.stopPropagation(ev);
    menuContexto(ev.originalEvent.clientX,ev.originalEvent.clientY,[
+    {label:'✎ Editar pontos desta estrada',acao:()=>{setMode('editarRota');iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}},
     {label:'Ver/zoom',acao:()=>map.fitBounds(plU.getBounds(),{padding:[60,60]})},
     {label:'✕ Apagar esta estrada',acao:()=>{snapshot();COR.estradas.splice(i,1);save();renderU();stat();}},
    ]);});});
@@ -1552,15 +1592,27 @@ function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const x=document.createElement('button');x.className='sm';x.textContent='desfazer';
   x.onclick=()=>{snapshot();COR.divisoes.splice(i,1);save();renderU();};
   li.appendChild(x);ulD.appendChild(li);});
+ const ulE=document.getElementById('lstEdit');ulE.innerHTML='';
+ (COR.estradas_editadas||[]).forEach((r,i)=>{
+  const li=document.createElement('li');
+  li.innerHTML='<span>'+r.nome+'</span>';
+  const z=document.createElement('button');z.className='sm';z.textContent='ver';
+  z.onclick=()=>map.fitBounds(L.polyline(r.pts).getBounds(),{padding:[60,60]});
+  const x=document.createElement('button');x.className='sm';x.textContent='desfazer';
+  x.onclick=()=>{snapshot();COR.estradas_editadas.splice(i,1);save();renderU();};
+  const w=document.createElement('span');w.append(z,' ',x);li.appendChild(w);ulE.appendChild(li);});
+ atualizaGotos();
  atualizaBadges();stat();}
 function atualizaBadges(){
  document.getElementById('badgeLst').textContent=COR.estradas.length;
  document.getElementById('badgeRem').textContent=COR.remover.length;
+ document.getElementById('badgeEdit').textContent=(COR.estradas_editadas||[]).length;
  document.getElementById('badgePlan').textContent=(COR.talhoes_novos||[]).length;
  document.getElementById('badgeDiv').textContent=(COR.divisoes||[]).length;
- document.getElementById('badgeCor').textContent=COR.estradas.length+COR.remover.length+(COR.talhoes_novos||[]).length+(COR.divisoes||[]).length+COR.divisas_sem_estrada.length;}
+ document.getElementById('badgeCor').textContent=COR.estradas.length+COR.remover.length+(COR.talhoes_novos||[]).length+(COR.divisoes||[]).length+COR.divisas_sem_estrada.length+(COR.estradas_editadas||[]).length;}
 function stat(){const partes=[];
  if(COR.estradas.length)partes.push(COR.estradas.length+' estrada(s) sua(s)');
+ if((COR.estradas_editadas||[]).length)partes.push(COR.estradas_editadas.length+' rota(s) editada(s)');
  if((COR.talhoes_novos||[]).length)partes.push(COR.talhoes_novos.length+' talhão(ões) planejado(s)/editado(s)');
  if((COR.divisoes||[]).length)partes.push(COR.divisoes.length+' divisão(ões)/união(ões)');
  if(COR.divisas_sem_estrada.length)partes.push(COR.divisas_sem_estrada.length+' divisa(s) marcada(s) sem estrada');
@@ -1569,13 +1621,15 @@ function stat(){const partes=[];
 function toggleRemover(nome,pl){
  snapshot();
  const i=COR.remover.indexOf(nome);
- if(i===-1){COR.remover.push(nome);pl.setStyle({color:'#ff3b3b',dashArray:'4,6',opacity:.6});}
- else{COR.remover.splice(i,1);pl.setStyle({color:'#ff8a00',dashArray:null,opacity:1});}
+ if(i===-1)COR.remover.push(nome);
+ else COR.remover.splice(i,1);
  save();renderRem();}
 function renderRem(){
  tracadaLayers.forEach(({nome,pl})=>{
   const marcada=COR.remover.includes(nome);
-  pl.setStyle(marcada?{color:'#ff3b3b',dashArray:'4,6',opacity:.6}:{color:'#ff8a00',dashArray:null,opacity:1});});
+  if(marcada)gE.removeLayer(pl);
+  else if(!gE.hasLayer(pl))gE.addLayer(pl);
+ });
  const ul=document.getElementById('lstRem');ul.innerHTML='';
  COR.remover.forEach(nome=>{
   const li=document.createElement('li');
@@ -1583,9 +1637,11 @@ function renderRem(){
   const d=document.createElement('button');d.className='sm';d.textContent='desfazer';
   d.onclick=()=>{const t=tracadaLayers.find(x=>x.nome===nome);toggleRemover(nome,t.pl);};
   li.appendChild(d);ul.appendChild(li);});
+ atualizaGotos();
  atualizaBadges();stat();}
 function setMode(m){
  if(mode==='editarContorno'&&m!=='editarContorno')cancelarEdicaoContorno();
+ if(mode==='editarRota'&&m!=='editarRota')cancelarEdicaoRota();
  if(mode==='dividir'&&m!=='dividir')cancelarDivisao();
  if(mode==='unir'&&m!=='unir')cancelarUniao();
  mode=m;
@@ -1593,6 +1649,7 @@ function setMode(m){
  document.getElementById('bnew').classList.toggle('on',m==='draw');
  document.getElementById('bblock').classList.toggle('on',m==='block');
  document.getElementById('bedit').classList.toggle('on',m==='editar');
+ document.getElementById('beditrota').classList.toggle('on',m==='editarRota');
  document.getElementById('bplan').classList.toggle('on',m==='talhao');
  document.getElementById('beditc').classList.toggle('on',m==='editarContorno');
  document.getElementById('bsplit').classList.toggle('on',m==='dividir');
@@ -1600,6 +1657,7 @@ function setMode(m){
  bar.classList.toggle('show',m==='draw');
  barT.classList.toggle('show',m==='talhao');
  barE.classList.toggle('show',m==='editarContorno');
+ barR.classList.toggle('show',m==='editarRota');
  barS.classList.toggle('show',m==='dividir');
  barM.classList.toggle('show',m==='unir');
  map.getContainer().style.cursor=m?'crosshair':'';
@@ -1607,6 +1665,8 @@ function setMode(m){
   ? 'Clique em cima de um trecho amarelo que NÃO é estrada de verdade.'
   : m==='editar'
   ? 'Clique numa estrada laranja (já desenhada) para marcar pra apagar. Clique de novo pra desfazer.'
+  : m==='editarRota'
+  ? 'Clique numa estrada (laranja ou verde) pra editar os pontos dela — arraste os vértices, ou arraste o meio de um trecho pra criar um vértice novo.'
   : m==='talhao'
   ? 'Clique pra desenhar o contorno do talhão novo (mínimo 3 pontos) — os pontos grudam no contorno dos talhões vizinhos, ajuda a não deixar sobreposição. Escolha a fazenda e digite o código antes de "Terminar talhão".'
   : m==='editarContorno'
@@ -1625,6 +1685,8 @@ function snap(ll){const p=map.latLngToContainerPoint(ll);let best=null,bd=18;
 document.getElementById('bnew').onclick=()=>{if(mode==='draw'){exitDraw();return;}pts=[];nDraw=COR.estradas.length;setMode('draw');tmp();};
 document.getElementById('bblock').onclick=()=>setMode(mode==='block'?null:'block');
 document.getElementById('bedit').onclick=()=>setMode(mode==='editar'?null:'editar');
+document.getElementById('beditrota').onclick=()=>setMode(mode==='editarRota'?null:'editarRota');
+document.getElementById('rexit').onclick=()=>setMode(null);
 document.getElementById('bplan').onclick=()=>{ptsT=[];if(mode==='talhao'){tmpT();setMode(null);return;}setMode('talhao');tmpT();};
 map.on('click',e=>{
  if(mode==='draw'){pts.push(snap(e.latlng));tmp();}
@@ -1715,6 +1777,56 @@ document.getElementById('esalvar').onclick=()=>{
   obs:'Contorno redesenhado via bancada (talhão já existia).'});
  save();renderU();
  cancelarEdicaoContorno();
+ setMode(null);
+};
+
+// ---------- editar pontos de uma estrada existente (traçada ou desenhada)
+let editandoRota=null; // {tipo:'tracada'|'desenhada', nome ou idx, pl(original), layer(edicao)}
+function atualizaInfoRota(){
+ if(!editandoRota)return;
+ const pts=editandoRota.layer.getLatLngs();
+ let d=0;for(let i=1;i<pts.length;i++)d+=map.distance(pts[i-1],pts[i]);
+ document.getElementById('bmsgR').textContent='Editando '+(editandoRota.nome||'sua estrada')
+  +' — '+pts.length+' ponto(s) · '+(d/1000).toFixed(2).replace('.',',')+' km';
+}
+function iniciaEdicaoRota(alvo){
+ if(editandoRota)cancelarEdicaoRota();
+ const pts = alvo.tipo==='tracada'
+  ? ((COR.estradas_editadas||[]).find(x=>x.nome===alvo.nome)||D.tracadas.find(x=>x.nome===alvo.nome)).pts
+  : COR.estradas[alvo.idx].pts;
+ const layer=L.polyline(pts,{color:'#ffb400',weight:4}).addTo(gEditPrev);
+ layer.pm.enable({allowSelfIntersection:true,snappable:true,snapDistance:20});
+ editandoRota={...alvo,layer};
+ layer.on('pm:markerdragend pm:vertexadded pm:vertexremoved',atualizaInfoRota);
+ alvo.pl.setStyle({opacity:.15});
+ document.getElementById('rsalvar').style.display='';
+ map.fitBounds(layer.getBounds(),{padding:[60,60]});
+ atualizaInfoRota();
+}
+function cancelarEdicaoRota(){
+ if(!editandoRota)return;
+ editandoRota.layer.pm.disable();
+ gEditPrev.removeLayer(editandoRota.layer);
+ editandoRota.pl.setStyle({opacity:1});
+ editandoRota=null;
+ document.getElementById('rsalvar').style.display='none';
+ document.getElementById('bmsgR').textContent='Editar rota — clique numa estrada (laranja ou verde) pra editar';
+}
+document.getElementById('rsalvar').onclick=()=>{
+ if(!editandoRota)return;
+ const pts=editandoRota.layer.getLatLngs().map(p=>[+p.lat.toFixed(6),+p.lng.toFixed(6)]);
+ if(pts.length<2){alert('Precisa de pelo menos 2 pontos.');return;}
+ snapshot();
+ if(editandoRota.tipo==='desenhada'){
+  COR.estradas[editandoRota.idx].pts=pts;
+ } else {
+  COR.estradas_editadas=COR.estradas_editadas||[];
+  const i=COR.estradas_editadas.findIndex(x=>x.nome===editandoRota.nome);
+  if(i===-1)COR.estradas_editadas.push({nome:editandoRota.nome,pts});
+  else COR.estradas_editadas[i].pts=pts;
+ }
+ save();renderU();
+ cancelarEdicaoRota();
  setMode(null);
 };
 
@@ -1867,7 +1979,7 @@ function desfazer(){
  if(mode==='draw'&&pts.length){pts.pop();tmp();return;}
  if(mode==='talhao'&&ptsT.length){ptsT.pop();tmpT();return;}
  if(!historico.length)return;
- COR=JSON.parse(historico.pop());COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];COR.divisoes=COR.divisoes||[];
+ COR=JSON.parse(historico.pop());COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];COR.divisoes=COR.divisoes||[];COR.estradas_editadas=COR.estradas_editadas||[];
  save();renderU();renderRem();
 }
 document.getElementById('bundoBtn').onclick=desfazer;
@@ -1939,9 +2051,9 @@ map.on('contextmenu',e=>{
 function block(i,pl){if(COR.divisas_sem_estrada.includes(i))return;
  snapshot();COR.divisas_sem_estrada.push(i);pl.setStyle({color:'#ff3b3b',dashArray:'4,6'});save();atualizaBadges();stat();}
 function perguntaLimpar(){
- if(!(COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length||(COR.talhoes_novos||[]).length||(COR.divisoes||[]).length))return;
+ if(!(COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length||(COR.talhoes_novos||[]).length||(COR.divisoes||[]).length||(COR.estradas_editadas||[]).length))return;
  if(confirm('Já foi enviado. Limpar agora pra não mandar essas mesmas correções de novo na próxima exportação? (Cancelar mantém tudo salvo, pra continuar desenhando antes de enviar.)'))
-  {COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[]};save();location.reload();}}
+  {COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[],estradas_editadas:[]};save();location.reload();}}
 document.getElementById('bcopy').onclick=async()=>{const t=JSON.stringify(COR);
  try{await navigator.clipboard.writeText(t);alert('Correções copiadas ('+COR.estradas.length+' estradas). Cole na conversa.');}
  catch(e){prompt('Copie o texto abaixo e cole na conversa:',t);}
@@ -1955,16 +2067,16 @@ document.getElementById('fimport').onchange=async e=>{
  let novo;
  try{novo=JSON.parse(await f.text());}catch(err){alert('Arquivo inválido — não parece um .json de correções.');return;}
  if(typeof novo!=='object'||novo===null||Array.isArray(novo)
-    ||!['estradas','divisas_sem_estrada','remover','talhoes_novos','divisoes'].some(k=>k in novo)){
+    ||!['estradas','divisas_sem_estrada','remover','talhoes_novos','divisoes','estradas_editadas'].some(k=>k in novo)){
   alert('Arquivo inválido — não parece um .json de correções desta bancada.');return;}
  const temAtual=COR.estradas.length||COR.divisas_sem_estrada.length||COR.remover.length
-   ||(COR.talhoes_novos||[]).length||(COR.divisoes||[]).length;
+   ||(COR.talhoes_novos||[]).length||(COR.divisoes||[]).length||(COR.estradas_editadas||[]).length;
  if(temAtual&&!confirm('Isso substitui todas as correções atuais (de todas as fazendas) pelas do arquivo. Continuar?'))return;
  COR={estradas:novo.estradas||[],divisas_sem_estrada:novo.divisas_sem_estrada||[],remover:novo.remover||[],
-      talhoes_novos:novo.talhoes_novos||[],divisoes:novo.divisoes||[]};
+      talhoes_novos:novo.talhoes_novos||[],divisoes:novo.divisoes||[],estradas_editadas:novo.estradas_editadas||[]};
  save();location.reload();};
 document.getElementById('bclr').onclick=()=>{if(!confirm('Apagar todas as suas correções?'))return;
- COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[]};save();location.reload();};
+ COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes:[],estradas_editadas:[]};save();location.reload();};
 document.querySelectorAll('#satBar button').forEach(b=>b.onclick=()=>setBase(b.dataset.b));
 renderU();renderRem();
 </script></body></html>

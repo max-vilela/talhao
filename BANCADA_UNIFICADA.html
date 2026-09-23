@@ -1000,10 +1000,11 @@ tr:hover td{background:#262a1e}tr.sel td{background:#3c4226}
 .hint.sub .sw{width:16px}
 .badge{display:inline-block;padding:1px 6px;border-radius:99px;font-size:10.5px;background:#2c3122;color:var(--mut)}
 .badge.w{background:#4a3a12;color:#ffcf5c}
-#bar,#barT,#barE,#barR,#barS,#barM{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:900;background:rgba(18,20,14,.96);border:1px solid var(--dr);border-radius:9px;padding:9px 13px;display:none;gap:9px;align-items:center;box-shadow:0 8px 26px #000a;flex-wrap:wrap;max-width:calc(100vw - 40px)}
-#bar.show,#barT.show,#barE.show,#barR.show,#barS.show,#barM.show{display:flex}
-#bar b,#barT b,#barE b,#barR b,#barS b,#barM b{color:var(--dr)}
+#bar,#barT,#barD,#barE,#barR,#barS,#barM{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:900;background:rgba(18,20,14,.96);border:1px solid var(--dr);border-radius:9px;padding:9px 13px;display:none;gap:9px;align-items:center;box-shadow:0 8px 26px #000a;flex-wrap:wrap;max-width:calc(100vw - 40px)}
+#bar.show,#barT.show,#barD.show,#barE.show,#barR.show,#barS.show,#barM.show{display:flex}
+#bar b,#barT b,#barD b,#barE b,#barR b,#barS b,#barM b{color:var(--dr)}
 #barT{border-color:#b967ff}#barT b{color:#b967ff}
+#barD{border-color:#ff3b3b}#barD b{color:#ff3b3b}
 #barE{border-color:#ffb400}#barE b{color:#ffb400}
 #barR{border-color:#ffb400}#barR b{color:#ffb400}
 #barS{border-color:#ff5470}#barS b{color:#ff5470}
@@ -1052,6 +1053,12 @@ ul.lst li{display:flex;justify-content:space-between;align-items:center;gap:6px;
   <button id="tundo" class="sm">Desfazer ponto</button>
   <button id="tend" class="go">Terminar talhão</button>
   <button id="texit" class="sm">Sair do desenho</button>
+</div>
+<div id="barD">
+  <b id="bmsgD">Apagar — clique numa estrada (laranja ou verde) pra selecionar</b>
+  <button id="dapagar" class="go" style="display:none;background:#ff3b3b;border-color:#ff3b3b;color:#fff">✕ Confirmar: apagar esta estrada</button>
+  <button id="dcancelar" class="sm" style="display:none">Cancelar seleção</button>
+  <button id="dexit" class="sm">Sair do modo</button>
 </div>
 <div id="barE">
   <b id="bmsgE">Editar contorno — clique num talhão existente</b>
@@ -1423,13 +1430,15 @@ D.tracadas.forEach((t,i)=>{const pl=L.polyline(t.pts,{color:'#ff8a00',weight:4,o
   .bindTooltip(t.nome,{sticky:true});addSnap(t.pts);
   tracadaLayers.push({nome:t.nome,pl});
   pl.on('click',e=>{
-   if(mode==='editar'){L.DomEvent.stop(e);toggleRemover(t.nome,pl);}
+   if(mode==='editar'){L.DomEvent.stop(e);selecionaApagar({tipo:'tracada',nome:t.nome,pl});}
    else if(mode==='editarRota'){L.DomEvent.stop(e);iniciaEdicaoRota({tipo:'tracada',nome:t.nome,pl});}
   });
   pl.on('contextmenu',e=>{L.DomEvent.preventDefault(e.originalEvent);L.DomEvent.stopPropagation(e);
    const marcada=COR.remover.includes(t.nome);
    menuContexto(e.originalEvent.clientX,e.originalEvent.clientY,[
-    {label:marcada?'↶ Desfazer marcação de apagar':'✕ Marcar pra apagar',acao:()=>toggleRemover(t.nome,pl)},
+    marcada
+     ? {label:'↶ Desfazer marcação de apagar',acao:()=>toggleRemover(t.nome,pl)}
+     : {label:'✕ Apagar esta estrada',acao:()=>{setMode('editar');selecionaApagar({tipo:'tracada',nome:t.nome,pl});}},
     {label:'✎ Editar pontos desta estrada',acao:()=>{setMode('editarRota');iniciaEdicaoRota({tipo:'tracada',nome:t.nome,pl});}},
     {label:'Ver/zoom',acao:()=>map.fitBounds(pl.getBounds(),{padding:[60,60]})},
    ]);});
@@ -1543,20 +1552,20 @@ let COR={estradas:[],divisas_sem_estrada:[],remover:[],talhoes_novos:[],divisoes
 try{const s=localStorage.getItem('cor_unificada');if(s){COR=JSON.parse(s);COR.remover=COR.remover||[];COR.talhoes_novos=COR.talhoes_novos||[];COR.divisoes=COR.divisoes||[];COR.estradas_editadas=COR.estradas_editadas||[];}}catch(e){}
 let mode=null,pts=[],nDraw=0,ptsT=[];
 const bar=document.getElementById('bar'),barT=document.getElementById('barT'),
-      barE=document.getElementById('barE'),barR=document.getElementById('barR'),
+      barD=document.getElementById('barD'),barE=document.getElementById('barE'),barR=document.getElementById('barR'),
       barS=document.getElementById('barS'),barM=document.getElementById('barM');
 function save(){try{localStorage.setItem('cor_unificada',JSON.stringify(COR));}catch(e){}}
 function renderU(){gU.clearLayers();COR.estradas.forEach((e,i)=>{
   const plU=L.polyline(e.pts,{color:'#38d39f',weight:4}).addTo(gU).bindTooltip('sua estrada '+(i+1),{sticky:true});
   plU.on('click',ev=>{
-   if(mode==='editar'){L.DomEvent.stop(ev);snapshot();COR.estradas.splice(i,1);save();renderU();stat();}
+   if(mode==='editar'){L.DomEvent.stop(ev);selecionaApagar({tipo:'desenhada',idx:i,pl:plU});}
    else if(mode==='editarRota'){L.DomEvent.stop(ev);iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}
   });
   plU.on('contextmenu',ev=>{L.DomEvent.preventDefault(ev.originalEvent);L.DomEvent.stopPropagation(ev);
    menuContexto(ev.originalEvent.clientX,ev.originalEvent.clientY,[
     {label:'✎ Editar pontos desta estrada',acao:()=>{setMode('editarRota');iniciaEdicaoRota({tipo:'desenhada',idx:i,pl:plU});}},
     {label:'Ver/zoom',acao:()=>map.fitBounds(plU.getBounds(),{padding:[60,60]})},
-    {label:'✕ Apagar esta estrada',acao:()=>{snapshot();COR.estradas.splice(i,1);save();renderU();stat();}},
+    {label:'✕ Apagar esta estrada',acao:()=>{setMode('editar');selecionaApagar({tipo:'desenhada',idx:i,pl:plU});}},
    ]);});});
  const ul=document.getElementById('lst');ul.innerHTML='';
  COR.estradas.forEach((e,i)=>{let d=0;for(let j=1;j<e.pts.length;j++)d+=map.distance(e.pts[j-1],e.pts[j]);
@@ -1642,7 +1651,51 @@ function renderRem(){
   li.appendChild(d);ul.appendChild(li);});
  atualizaGotos();
  atualizaBadges();stat();}
+
+// ---------- apagar estrada: seleciona -> confirma -> some de tudo
+let alvoApagar=null; // {tipo:'tracada'|'desenhada', nome ou idx, pl, corOriginal}
+function selecionaApagar(alvo){
+ if(alvoApagar)cancelarSelecaoApagar();
+ alvo.corOriginal=alvo.pl.options.color;
+ alvo.pl.setStyle({color:'#ff3b3b',weight:6,dashArray:null});
+ alvoApagar=alvo;
+ const pts=alvo.pl.getLatLngs();
+ let d=0;for(let i=1;i<pts.length;i++)d+=map.distance(pts[i-1],pts[i]);
+ const nome=alvo.nome||'sua estrada (desenhada, ainda não enviada)';
+ document.getElementById('bmsgD').textContent=nome+' — '+(d/1000).toFixed(2).replace('.',',')+' km selecionada. Confirma apagar?';
+ document.getElementById('dapagar').style.display='';
+ document.getElementById('dcancelar').style.display='';
+}
+function cancelarSelecaoApagar(){
+ if(!alvoApagar)return;
+ alvoApagar.pl.setStyle({color:alvoApagar.corOriginal,weight:4,dashArray:null});
+ alvoApagar=null;
+ document.getElementById('bmsgD').textContent='Apagar — clique numa estrada (laranja ou verde) pra selecionar';
+ document.getElementById('dapagar').style.display='none';
+ document.getElementById('dcancelar').style.display='none';
+}
+document.getElementById('dcancelar').onclick=cancelarSelecaoApagar;
+document.getElementById('dexit').onclick=()=>setMode(null);
+document.getElementById('dapagar').onclick=()=>{
+ if(!alvoApagar)return;
+ const nome=alvoApagar.nome||'sua estrada (desenhada)';
+ const aviso=alvoApagar.tipo==='tracada'
+  ? 'Tem certeza que deseja apagar "'+nome+'"? Ela vai sumir do mapa e da lista agora (dá pra desfazer depois em "Marcadas pra apagar", antes de enviar).'
+  : 'Tem certeza que deseja apagar "'+nome+'"? Ela é sua, ainda não foi enviada — some de vez (só volta com Ctrl+Z antes de sair da página).';
+ if(!confirm(aviso))return;
+ if(alvoApagar.tipo==='tracada'){
+  toggleRemover(alvoApagar.nome,alvoApagar.pl);
+ } else {
+  snapshot();COR.estradas.splice(alvoApagar.idx,1);save();renderU();stat();
+ }
+ alvoApagar=null;
+ document.getElementById('bmsgD').textContent='Apagar — clique numa estrada (laranja ou verde) pra selecionar';
+ document.getElementById('dapagar').style.display='none';
+ document.getElementById('dcancelar').style.display='none';
+};
+
 function setMode(m){
+ if(mode==='editar'&&m!=='editar')cancelarSelecaoApagar();
  if(mode==='editarContorno'&&m!=='editarContorno')cancelarEdicaoContorno();
  if(mode==='editarRota'&&m!=='editarRota')cancelarEdicaoRota();
  if(mode==='dividir'&&m!=='dividir')cancelarDivisao();
@@ -1659,6 +1712,7 @@ function setMode(m){
  document.getElementById('bmerge').classList.toggle('on',m==='unir');
  bar.classList.toggle('show',m==='draw');
  barT.classList.toggle('show',m==='talhao');
+ barD.classList.toggle('show',m==='editar');
  barE.classList.toggle('show',m==='editarContorno');
  barR.classList.toggle('show',m==='editarRota');
  barS.classList.toggle('show',m==='dividir');
@@ -1667,7 +1721,7 @@ function setMode(m){
  document.getElementById('chint').textContent = m==='block'
   ? 'Clique em cima de um trecho amarelo que NÃO é estrada de verdade.'
   : m==='editar'
-  ? 'Clique numa estrada laranja (já cadastrada) pra marcar pra apagar — clique de novo pra desfazer. Numa estrada verde (sua, ainda não enviada), o clique já apaga direto.'
+  ? 'Clique numa estrada (laranja ou verde) pra selecionar — ela fica vermelha. Confirme em cima do mapa pra apagar de vez, ou clique em outra pra trocar a seleção.'
   : m==='editarRota'
   ? 'Clique numa estrada (laranja ou verde) pra editar os pontos dela — arraste os vértices, ou arraste o meio de um trecho pra criar um vértice novo.'
   : m==='talhao'

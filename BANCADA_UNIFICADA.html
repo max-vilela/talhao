@@ -939,6 +939,12 @@ button.on{background:var(--acc);color:#1a1a0d;border-color:var(--acc);font-weigh
 button.go{background:var(--dr);color:#062;border-color:var(--dr);font-weight:600}
 button.sm{padding:3px 7px;font-size:11px}
 button.sm.editada{border-color:#ffb400;color:#ffb400}
+/* geoman por padrao desenha os pontos-do-meio (que criam vertice novo ao arrastar)
+   bem pequenos, meio transparentes e em azul -- some contra a imagem de satelite
+   e destoa do amarelo que usamos pra "editando". Aumenta e destaca. */
+.marker-icon{background-color:#fff!important;border-color:#ffb400!important}
+.marker-icon-middle{opacity:.95!important;width:14px!important;height:14px!important;
+  margin:-8px 0 0 -8px!important;background-color:#ffb400!important;border-color:#fff!important}
 .row{display:flex;gap:6px;flex-wrap:wrap}
 label.ck{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}
 .sw{width:22px;height:0;border-top-width:3px;border-top-style:solid;flex:none}

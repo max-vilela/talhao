@@ -373,12 +373,16 @@ document.getElementById('ckRotulos').onchange = e => {
   atualizaRotulos();
 };
 
-let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false;
+let malhaCamada = null, tracadasCamada = null, camadasExtrasCarregadas = false, camadasExtrasCarregando = false;
+const filaCamadasExtras = [];
 function carregaCamadasExtras(cb) {
   if (camadasExtrasCarregadas) { cb(); return; }
+  filaCamadasExtras.push(cb);
+  if (camadasExtrasCarregando) return; // já tem um <script> a caminho — só entra na fila
+  camadasExtrasCarregando = true;
   const s = document.createElement('script');
-  s.src = 'malha_estradas.js?v=20260915h';
-  s.onload = () => { camadasExtrasCarregadas = true; cb(); };
+  s.src = 'malha_estradas.js?v=20260924b';
+  s.onload = () => { camadasExtrasCarregadas = true; filaCamadasExtras.splice(0).forEach(f => f()); };
   document.head.appendChild(s);
 }
 document.getElementById('ckMalha').onchange = e => {
